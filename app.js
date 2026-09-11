@@ -9,6 +9,10 @@ const STORAGE_KEY = "sassibrass_state_v1";
 /* ---------------------------------------------------------
    Uppgifter, indelade i sektioner för hela dagen
    --------------------------------------------------------- */
+// days: valfri lista med veckodagsnummer (0=söndag ... 6=lördag) uppgiften gäller.
+// Ingen "days"-lista = uppgiften gäller varje dag.
+const DAG_MAN = 1, DAG_TIS = 2, DAG_ONS = 3, DAG_TORS = 4, DAG_FRE = 5, DAG_LOR = 6, DAG_SON = 0;
+
 const TASK_SECTIONS = [
   {
     id: "morgon",
@@ -16,8 +20,7 @@ const TASK_SECTIONS = [
     title: "Morgonrutin",
     tasks: [
       { id: "vakna", emoji: "☀️", text: "Vakna och sträck på dig" },
-      { id: "badrum-morgon", emoji: "🪥", text: "Borsta tänderna" },
-      { id: "tvatta-ansikte", emoji: "💦", text: "Tvätta ansiktet" },
+      { id: "sminka", emoji: "💄", text: "Sminka dig" },
       { id: "kladd", emoji: "👕", text: "Klä på dig" },
       { id: "har", emoji: "💇‍♀️", text: "Fixa håret" },
       { id: "badda", emoji: "🛏️", text: "Bädda sängen" }
@@ -29,8 +32,9 @@ const TASK_SECTIONS = [
     title: "Frukost",
     tasks: [
       { id: "at-frukost", emoji: "🥣", text: "Ät frukost" },
-      { id: "drick", emoji: "🥤", text: "Drick ett glas vatten eller juice" },
-      { id: "matsack", emoji: "🍱", text: "Packa matsäck / lunch" }
+      { id: "drick-vatten", emoji: "💧", text: "Drick vatten" },
+      { id: "tander-morgon", emoji: "🪥", text: "Borsta tänderna" },
+      { id: "matsack", emoji: "🍱", text: "Packa matsäck" }
     ]
   },
   {
@@ -38,7 +42,7 @@ const TASK_SECTIONS = [
     emoji: "🎒",
     title: "Till skolan",
     tasks: [
-      { id: "packa-vaska", emoji: "📚", text: "Packa skolväskan" },
+      { id: "padda-bocker", emoji: "💻", text: "Ta med padda och böcker" },
       { id: "schema", emoji: "🗓️", text: "Kolla schemat" },
       { id: "till-skolan", emoji: "🚌", text: "Ta dig till skolan i tid" }
     ]
@@ -48,9 +52,16 @@ const TASK_SECTIONS = [
     emoji: "🏠",
     title: "Hemma efter skolan",
     tasks: [
-      { id: "sopor", emoji: "🗑️", text: "Gå ut med sopor" },
+      { id: "matsopor", emoji: "🍂", text: "Gå ut med matsopor", days: [DAG_MAN, DAG_ONS, DAG_FRE, DAG_LOR, DAG_SON] },
+      { id: "plastsopor", emoji: "♻️", text: "Gå ut med plastsopor", days: [DAG_TIS, DAG_TORS, DAG_SON] },
+      { id: "metallglas", emoji: "🍾", text: "Gå ut med metall- och glassopor", days: [DAG_SON] },
+      { id: "papperkartong", emoji: "📦", text: "Gå ut med papper och kartong", days: [DAG_SON] },
+      { id: "restavfall", emoji: "🗑️", text: "Gå ut med restavfall", days: [DAG_SON] },
       { id: "mellanmal", emoji: "🍎", text: "Ät ett mellanmål" },
-      { id: "stad-rum", emoji: "🧹", text: "Snygga till rummet lite" }
+      { id: "snygga-rum", emoji: "🧹", text: "Snygga upp rummet" },
+      { id: "dammsuga", emoji: "🧺", text: "Dammsuga", days: [DAG_LOR] },
+      { id: "stada-badrum", emoji: "🚽", text: "Städa badrummet", days: [DAG_LOR] },
+      { id: "nedanvaning", emoji: "📥", text: "Plocka undan grejer från nedanvåningen" }
     ]
   },
   {
@@ -58,18 +69,17 @@ const TASK_SECTIONS = [
     emoji: "👭",
     title: "Socialt & läxor",
     tasks: [
-      { id: "kompis", emoji: "💬", text: "Prata med eller träffa en kompis" },
       { id: "laxa", emoji: "📖", text: "Gör läxan" },
-      { id: "plocka-skolgrejer", emoji: "🖇️", text: "Plocka undan skolgrejer" }
+      { id: "kompis", emoji: "💬", text: "Träffa eller prata med en kompis" }
     ]
   },
   {
     id: "traning",
-    emoji: "🏃‍♀️",
-    title: "Träning & rörelse",
+    emoji: "🤸‍♀️",
+    title: "Cheerleading & träning",
     tasks: [
-      { id: "traning", emoji: "🤸‍♀️", text: "Träna eller rör på dig 20 min" },
-      { id: "strack", emoji: "🧘‍♀️", text: "Stretcha lite" }
+      { id: "cheerleading", emoji: "🤸‍♀️", text: "Gå på cheerleading", days: [DAG_TIS, DAG_TORS, DAG_SON] },
+      { id: "duscha", emoji: "🚿", text: "Duscha", days: [DAG_TIS, DAG_TORS, DAG_SON] }
     ]
   },
   {
@@ -77,16 +87,35 @@ const TASK_SECTIONS = [
     emoji: "🌙",
     title: "Kvällsrutin",
     tasks: [
-      { id: "dusch", emoji: "🚿", text: "Dusch eller tvätta dig" },
+      { id: "tvatta-ansikte-kvall", emoji: "💦", text: "Tvätta ansiktet" },
       { id: "tander-kvall", emoji: "🪥", text: "Borsta tänderna" },
       { id: "klader-imorgon", emoji: "🧦", text: "Lägg fram kläder till imorgon" },
-      { id: "mys", emoji: "📓", text: "Läsa, dagbok eller mysstund" },
+      { id: "meditera", emoji: "🧘‍♀️", text: "Meditera" },
+      { id: "dagbok", emoji: "📓", text: "Skriv dagbok" },
+      { id: "las-bok", emoji: "📚", text: "Läs bok" },
       { id: "lagga-sig", emoji: "😴", text: "Lägg dig i tid" }
     ]
   }
 ];
 
-const TOTAL_TASK_COUNT = TASK_SECTIONS.reduce((s, sec) => s + sec.tasks.length, 0);
+const WEEKDAY_NAMES = ["söndag", "måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag"];
+
+function isTaskActiveOnDay(task, dayNum) {
+  return !task.days || task.days.includes(dayNum);
+}
+function isTaskActiveToday(task) {
+  return isTaskActiveOnDay(task, new Date().getDay());
+}
+function activeTasksForSection(section, dayNum) {
+  const d = dayNum === undefined ? new Date().getDay() : dayNum;
+  return section.tasks.filter((t) => isTaskActiveOnDay(t, d));
+}
+function totalTasksForDay(dayNum) {
+  return TASK_SECTIONS.reduce((s, sec) => s + activeTasksForSection(sec, dayNum).length, 0);
+}
+function totalTasksToday() {
+  return totalTasksForDay(new Date().getDay());
+}
 
 const XP_PER_TASK = 15;
 const FOOD_PER_TASK = 1;
@@ -236,7 +265,8 @@ function handleDailyReset() {
 
   if (state.lastActiveDate) {
     const completedCount = Object.keys(state.completedToday).length;
-    const wasFullDay = completedCount >= TOTAL_TASK_COUNT;
+    const lastActiveDayNum = new Date(state.lastActiveDate + "T00:00:00").getDay();
+    const wasFullDay = completedCount >= totalTasksForDay(lastActiveDayNum);
     const consecutive = isConsecutiveDay(state.lastActiveDate, today);
 
     if (wasFullDay && (consecutive || state.streak === 0)) {
@@ -445,8 +475,10 @@ function updateStatsUI() {
   document.getElementById("love-btn").disabled = state.love <= 0;
 
   const doneCount = Object.keys(state.completedToday).length;
-  document.getElementById("daily-progress-text").textContent = `${doneCount} / ${TOTAL_TASK_COUNT}`;
-  document.getElementById("daily-progress-fill").style.width = clamp((doneCount / TOTAL_TASK_COUNT) * 100, 0, 100) + "%";
+  const totalToday = totalTasksToday();
+  document.getElementById("daily-progress-text").textContent = `${doneCount} / ${totalToday}`;
+  document.getElementById("daily-progress-fill").style.width = clamp((doneCount / totalToday) * 100, 0, 100) + "%";
+  document.getElementById("daily-progress-weekday").textContent = WEEKDAY_NAMES[new Date().getDay()];
 
   if (state.hunger <= 25) setBubble(pick(LOW_HUNGER_BUBBLE));
   else if (state.happiness <= 25) setBubble(pick(LOW_HAPPINESS_BUBBLE));
@@ -457,7 +489,10 @@ function renderTaskSections() {
   container.innerHTML = "";
 
   TASK_SECTIONS.forEach((section) => {
-    const doneInSection = section.tasks.filter((t) => state.completedToday[t.id]).length;
+    const todaysTasks = activeTasksForSection(section);
+    if (todaysTasks.length === 0) return;
+
+    const doneInSection = todaysTasks.filter((t) => state.completedToday[t.id]).length;
     const collapsed = !!state.sectionsCollapsed[section.id];
 
     const sectionEl = document.createElement("div");
@@ -466,11 +501,11 @@ function renderTaskSections() {
       <div class="task-section-header" data-section="${section.id}">
         <span class="task-section-emoji">${section.emoji}</span>
         <span class="task-section-title">${section.title}</span>
-        <span class="task-section-progress">${doneInSection}/${section.tasks.length}</span>
+        <span class="task-section-progress">${doneInSection}/${todaysTasks.length}</span>
         <span class="task-section-chevron">▾</span>
       </div>
       <ul class="task-list">
-        ${section.tasks
+        ${todaysTasks
           .map((t) => {
             const done = !!state.completedToday[t.id];
             return `
@@ -538,13 +573,13 @@ function completeTask(taskId, sectionId) {
     }
 
     const section = TASK_SECTIONS.find((s) => s.id === sectionId);
-    const sectionDone = section.tasks.every((t) => state.completedToday[t.id]);
+    const sectionDone = activeTasksForSection(section).every((t) => state.completedToday[t.id]);
     if (sectionDone) {
       setTimeout(() => showToast(pick(SECTION_COMPLETE_MESSAGES)), leveledUp ? 750 : 400);
       burstConfetti(20);
     }
 
-    const allDone = Object.keys(state.completedToday).length >= TOTAL_TASK_COUNT;
+    const allDone = Object.keys(state.completedToday).length >= totalTasksToday();
     if (allDone) {
       setTimeout(() => {
         showToast(pick(ALL_DONE_MESSAGES), true);

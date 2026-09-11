@@ -1,0 +1,673 @@
+"use strict";
+
+/* =========================================================
+   SASSIBRASS – kawaii uppgifts-app med haj & säl
+   ========================================================= */
+
+const STORAGE_KEY = "sassibrass_state_v1";
+
+/* ---------------------------------------------------------
+   Uppgifter, indelade i sektioner för hela dagen
+   --------------------------------------------------------- */
+const TASK_SECTIONS = [
+  {
+    id: "morgon",
+    emoji: "🌅",
+    title: "Morgonrutin",
+    tasks: [
+      { id: "vakna", emoji: "☀️", text: "Vakna och sträck på dig" },
+      { id: "badrum-morgon", emoji: "🪥", text: "Borsta tänderna" },
+      { id: "tvatta-ansikte", emoji: "💦", text: "Tvätta ansiktet" },
+      { id: "kladd", emoji: "👕", text: "Klä på dig" },
+      { id: "har", emoji: "💇‍♀️", text: "Fixa håret" },
+      { id: "badda", emoji: "🛏️", text: "Bädda sängen" }
+    ]
+  },
+  {
+    id: "frukost",
+    emoji: "🍳",
+    title: "Frukost",
+    tasks: [
+      { id: "at-frukost", emoji: "🥣", text: "Ät frukost" },
+      { id: "drick", emoji: "🥤", text: "Drick ett glas vatten eller juice" },
+      { id: "matsack", emoji: "🍱", text: "Packa matsäck / lunch" }
+    ]
+  },
+  {
+    id: "skola",
+    emoji: "🎒",
+    title: "Till skolan",
+    tasks: [
+      { id: "packa-vaska", emoji: "📚", text: "Packa skolväskan" },
+      { id: "schema", emoji: "🗓️", text: "Kolla schemat" },
+      { id: "till-skolan", emoji: "🚌", text: "Ta dig till skolan i tid" }
+    ]
+  },
+  {
+    id: "hemma",
+    emoji: "🏠",
+    title: "Hemma efter skolan",
+    tasks: [
+      { id: "sopor", emoji: "🗑️", text: "Gå ut med sopor" },
+      { id: "mellanmal", emoji: "🍎", text: "Ät ett mellanmål" },
+      { id: "stad-rum", emoji: "🧹", text: "Snygga till rummet lite" }
+    ]
+  },
+  {
+    id: "socialt",
+    emoji: "👭",
+    title: "Socialt & läxor",
+    tasks: [
+      { id: "kompis", emoji: "💬", text: "Prata med eller träffa en kompis" },
+      { id: "laxa", emoji: "📖", text: "Gör läxan" },
+      { id: "plocka-skolgrejer", emoji: "🖇️", text: "Plocka undan skolgrejer" }
+    ]
+  },
+  {
+    id: "traning",
+    emoji: "🏃‍♀️",
+    title: "Träning & rörelse",
+    tasks: [
+      { id: "traning", emoji: "🤸‍♀️", text: "Träna eller rör på dig 20 min" },
+      { id: "strack", emoji: "🧘‍♀️", text: "Stretcha lite" }
+    ]
+  },
+  {
+    id: "kvall",
+    emoji: "🌙",
+    title: "Kvällsrutin",
+    tasks: [
+      { id: "dusch", emoji: "🚿", text: "Dusch eller tvätta dig" },
+      { id: "tander-kvall", emoji: "🪥", text: "Borsta tänderna" },
+      { id: "klader-imorgon", emoji: "🧦", text: "Lägg fram kläder till imorgon" },
+      { id: "mys", emoji: "📓", text: "Läsa, dagbok eller mysstund" },
+      { id: "lagga-sig", emoji: "😴", text: "Lägg dig i tid" }
+    ]
+  }
+];
+
+const TOTAL_TASK_COUNT = TASK_SECTIONS.reduce((s, sec) => s + sec.tasks.length, 0);
+
+const XP_PER_TASK = 15;
+const FOOD_PER_TASK = 1;
+const LOVE_PER_TASK = 1;
+
+function xpToNext(level) {
+  return 80 + (level - 1) * 30;
+}
+
+/* ---------------------------------------------------------
+   Peppiga meddelanden
+   --------------------------------------------------------- */
+const TASK_MESSAGES = [
+  "Wow, du är helt fantastisk! 🦈✨",
+  "Ja baby! Uppgift klarad – du krossar det idag! 💪🌊",
+  "Din kompis gör en glädjedans för dig! 💃🌟",
+  "Klappar med fenorna – du är bäst! 👏🐚",
+  "Snyggt jobbat! Ett steg närmre en superdag 🌈",
+  "Puts väck! Den uppgiften fanns knappt ens 😎",
+  "Du är ostoppbar idag! 🚀",
+  "Så himla proffsigt gjort! 🏆",
+  "Ännu en vinst i kappsäcken! 🎒✨",
+  "Fint jobbat, du tar hand om dig själv så bra 💖",
+  "Simmar rakt mot målet, vilken stjärna! ⭐",
+  "Det där gjorde du helt suveränt! 🥳",
+  "Ditt djur är superstolt över dig just nu 🦭💕",
+  "En till avklarad – du är helt magisk 🪄",
+  "Woho! Small steps, big vibes 🌊✨",
+  "Du visar verkligen vad du går för! 💪",
+  "Superpepp-nivå: max! 🔥",
+  "Det här är precis den energin vi vill ha! ⚡",
+  "Bubblor av glädje överallt! 🫧",
+  "Du är typ dagens huvudperson nu 🎬✨"
+];
+
+const SECTION_COMPLETE_MESSAGES = [
+  "En hel sektion klar! Du är otrolig! 🎉",
+  "Helt avklarat – ditt djur gör kullerbyttor av glädje! 🤸‍♀️",
+  "Boom! Den kategorin är helt sopren! 🧹✨",
+  "Snyggaste avklarade listan någonsin! 🏅",
+  "Full pott på den här delen – legendariskt! 👑"
+];
+
+const ALL_DONE_MESSAGES = [
+  "ALLA uppgifter klara idag?! Du är en LEGEND! 🏆🌊",
+  "Perfekt dag uppnådd! Ditt djur simmar glädjevarv! 🦈🎊",
+  "Wow wow wow – hela dagen avklarad, streak säkrad! 🔥✨",
+  "Du är dagens superhjälte, punkt slut! 🦸‍♀️💖"
+];
+
+const LEVEL_UP_MESSAGES = [
+  "LEVEL UP! Ditt djur känner sig starkare än någonsin! 🌟",
+  "Ny nivå uppnåest – du gör verkligen ett strålande jobb! 🆙💫",
+  "Level up! Bonusgodis regnar över er båda! 🍬✨"
+];
+
+const FOOD_MESSAGES = [
+  "Mums! Precis vad jag behövde 🍤",
+  "Så gott! Tack för maten! 😋",
+  "Nu är magen glad och nöjd 🥰",
+  "Slurp slurp, jättegott! 🌊"
+];
+
+const LOVE_MESSAGES = [
+  "Åh vad varmt om hjärtat! 💕",
+  "Jag älskar dig också! 🥹💖",
+  "Kramar tillbaka så hårt jag kan! 🤗",
+  "Bästa kompisar för alltid! 💞"
+];
+
+const GREETING_MORNING = [
+  "God morgon! Redo för en superdag? ☀️",
+  "Vakna vakna! Idag blir grymt! 🌅"
+];
+const GREETING_AFTERNOON = [
+  "Hallå där! Hur går dagen? 🌊",
+  "Snyggt kämpat hittills idag! 💪"
+];
+const GREETING_EVENING = [
+  "Kvällen är här, snart dags att varva ner 🌙",
+  "Bra jobbat idag, dags för lite mys! ✨"
+];
+
+const LOW_HUNGER_BUBBLE = ["Psst... jag är lite hungrig 🥺🍤", "Magen kurrar lite... mat tack! 🙏"];
+const LOW_HAPPINESS_BUBBLE = ["Jag skulle bli superglad av lite kärlek 💗", "Kan jag få en kram? 🥺"];
+
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(max, n));
+}
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function isConsecutiveDay(prevStr, curStr) {
+  if (!prevStr) return false;
+  const prev = new Date(prevStr + "T00:00:00");
+  const cur = new Date(curStr + "T00:00:00");
+  const diffDays = Math.round((cur - prev) / 86400000);
+  return diffDays === 1;
+}
+
+/* ---------------------------------------------------------
+   State
+   --------------------------------------------------------- */
+function defaultState() {
+  return {
+    petType: null,
+    petName: "",
+    level: 1,
+    xp: 0,
+    food: 2,
+    love: 2,
+    hunger: 80,
+    happiness: 80,
+    streak: 0,
+    lastActiveDate: null,
+    completedToday: {},
+    rewardedToday: {},
+    totalCompleted: 0,
+    sectionsCollapsed: {}
+  };
+}
+
+let state = loadState();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    return Object.assign(defaultState(), parsed);
+  } catch (e) {
+    return defaultState();
+  }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function handleDailyReset() {
+  const today = todayStr();
+  if (state.lastActiveDate === today) return;
+
+  if (state.lastActiveDate) {
+    const completedCount = Object.keys(state.completedToday).length;
+    const wasFullDay = completedCount >= TOTAL_TASK_COUNT;
+    const consecutive = isConsecutiveDay(state.lastActiveDate, today);
+
+    if (wasFullDay && (consecutive || state.streak === 0)) {
+      state.streak += 1;
+    } else if (!consecutive) {
+      state.streak = 0;
+    } else if (!wasFullDay) {
+      state.streak = 0;
+    }
+
+    // djuret blir lite hungrigare/mindre glatt över natten
+    state.hunger = clamp(state.hunger - 25, 10, 100);
+    state.happiness = clamp(state.happiness - 15, 10, 100);
+  }
+
+  state.completedToday = {};
+  state.rewardedToday = {};
+  state.lastActiveDate = today;
+  saveState();
+}
+
+/* ---------------------------------------------------------
+   Pet SVG-generering (kawaii-stil)
+   --------------------------------------------------------- */
+function eyesMarkup(mood, cx1, cx2, cy) {
+  if (mood === "love") {
+    const heart = (cx) => `
+      <path d="M${cx} ${cy + 6} C${cx - 8} ${cy - 4}, ${cx - 2} ${cy - 12}, ${cx} ${cy - 6}
+               C${cx + 2} ${cy - 12}, ${cx + 8} ${cy - 4}, ${cx} ${cy + 6} Z" fill="#ff6f9c"/>`;
+    return heart(cx1) + heart(cx2);
+  }
+  if (mood === "sad") {
+    return `
+      <circle cx="${cx1}" cy="${cy}" r="7" fill="#3a2e45"/>
+      <circle cx="${cx2}" cy="${cy}" r="7" fill="#3a2e45"/>
+      <path d="M${cx1 - 6} ${cy - 10} q6 -6 12 0" stroke="#3a2e45" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M${cx2 - 6} ${cy - 10} q6 -6 12 0" stroke="#3a2e45" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <circle cx="${cx1 + 3}" cy="${cy + 10}" r="2.5" fill="#bfe4ff"/>
+    `;
+  }
+  // happy / yum / default – stora glittriga ögon
+  return `
+    <circle cx="${cx1}" cy="${cy}" r="9" fill="#3a2e45"/>
+    <circle cx="${cx2}" cy="${cy}" r="9" fill="#3a2e45"/>
+    <circle cx="${cx1 - 3}" cy="${cy - 3}" r="2.6" fill="#fff"/>
+    <circle cx="${cx2 - 3}" cy="${cy - 3}" r="2.6" fill="#fff"/>
+    <circle cx="${cx1 + 2.5}" cy="${cy + 2.5}" r="1.4" fill="#fff" opacity="0.8"/>
+    <circle cx="${cx2 + 2.5}" cy="${cy + 2.5}" r="1.4" fill="#fff" opacity="0.8"/>
+  `;
+}
+
+function mouthMarkup(mood, cx, cy) {
+  if (mood === "yum") {
+    return `<ellipse cx="${cx}" cy="${cy}" rx="7" ry="9" fill="#a5445c"/>
+            <ellipse cx="${cx}" cy="${cy + 4}" rx="4" ry="3" fill="#ff8fa8"/>`;
+  }
+  if (mood === "sad") {
+    return `<path d="M${cx - 10} ${cy + 6} q10 -10 20 0" stroke="#3a2e45" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  }
+  return `<path d="M${cx - 12} ${cy - 4} q12 14 24 0" stroke="#3a2e45" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+}
+
+function blushMarkup(cx1, cx2, cy) {
+  return `<ellipse cx="${cx1}" cy="${cy}" rx="9" ry="5.5" fill="#ffb4c6" opacity="0.7"/>
+          <ellipse cx="${cx2}" cy="${cy}" rx="9" ry="5.5" fill="#ffb4c6" opacity="0.7"/>`;
+}
+
+function accessoryMarkup(level) {
+  if (level >= 6) {
+    return `<g transform="translate(70,26)">
+      <path d="M0 18 L6 2 L14 14 L20 -2 L26 14 L34 2 L40 18 Z" fill="#ffd93d" stroke="#e0a800" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="20" cy="4" r="3" fill="#ff6f9c"/>
+    </g>`;
+  }
+  if (level >= 3) {
+    return `<g transform="translate(122,40) rotate(15)">
+      <path d="M0 0 L6 -14 L12 0 Z" fill="#ffd93d"/>
+      <circle cx="6" cy="-16" r="3" fill="#ffe98a"/>
+    </g>`;
+  }
+  return "";
+}
+
+function renderSharkSVG(mood, level) {
+  return `
+  <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="100" cy="150" rx="55" ry="10" fill="#000" opacity="0.06"/>
+    <path d="M60 60 Q100 20 150 55 Q170 65 165 95 Q160 130 110 140 Q60 148 45 110 Q35 80 60 60 Z" fill="#8fd8f7"/>
+    <path d="M65 105 Q100 135 145 100 Q140 130 100 138 Q65 132 65 105 Z" fill="#eaf9ff"/>
+    <path d="M105 25 Q118 5 132 22 Q120 32 108 34 Z" fill="#8fd8f7"/>
+    <path d="M158 70 Q182 62 188 78 Q178 88 160 86 Z" fill="#8fd8f7"/>
+    ${blushMarkup(78, 128, 92)}
+    ${eyesMarkup(mood, 82, 122, 75)}
+    ${mouthMarkup(mood, 102, 96)}
+    ${accessoryMarkup(level)}
+  </svg>`;
+}
+
+function renderSealSVG(mood, level) {
+  return `
+  <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="100" cy="150" rx="55" ry="10" fill="#000" opacity="0.06"/>
+    <ellipse cx="100" cy="95" rx="62" ry="58" fill="#c9d6e3"/>
+    <ellipse cx="100" cy="112" rx="38" ry="30" fill="#eef3f8"/>
+    <ellipse cx="45" cy="120" rx="16" ry="9" fill="#c9d6e3" transform="rotate(-25 45 120)"/>
+    <ellipse cx="155" cy="120" rx="16" ry="9" fill="#c9d6e3" transform="rotate(25 155 120)"/>
+    ${blushMarkup(72, 128, 100)}
+    ${eyesMarkup(mood, 82, 122, 82)}
+    ${mouthMarkup(mood, 102, 104)}
+    <path d="M70 100 L45 96 M70 104 L43 106 M130 100 L155 96 M130 104 L157 106" stroke="#b0a89f" stroke-width="1.5" stroke-linecap="round"/>
+    ${accessoryMarkup(level)}
+  </svg>`;
+}
+
+function petSVG(type, mood, level) {
+  return type === "seal" ? renderSealSVG(mood, level) : renderSharkSVG(mood, level);
+}
+
+let currentMood = "happy";
+function updatePetAvatars(mood) {
+  currentMood = mood || currentMood;
+  const svg = petSVG(state.petType, currentMood, state.level);
+  const mini = document.getElementById("pet-avatar");
+  const big = document.getElementById("pet-avatar-big");
+  if (mini) mini.innerHTML = svg;
+  if (big) big.innerHTML = svg;
+}
+
+function flashMood(mood, duration = 1400) {
+  updatePetAvatars(mood);
+  setTimeout(() => updatePetAvatars("happy"), duration);
+}
+
+/* ---------------------------------------------------------
+   UI: toasts, confetti, floating emoji
+   --------------------------------------------------------- */
+function showToast(text, big) {
+  const layer = document.getElementById("toast-layer");
+  const el = document.createElement("div");
+  el.className = "toast" + (big ? " big" : "");
+  el.textContent = text;
+  layer.appendChild(el);
+  setTimeout(() => el.remove(), 2700);
+}
+
+const CONFETTI_COLORS = ["#ff9ecb", "#8fd8f7", "#c9a6f5", "#ffd93d", "#7fe0c4"];
+function burstConfetti(count) {
+  const layer = document.getElementById("confetti-layer");
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement("div");
+    el.className = "confetti-piece";
+    const size = 6 + Math.random() * 6;
+    el.style.left = Math.random() * 100 + "vw";
+    el.style.width = size + "px";
+    el.style.height = size * 0.6 + "px";
+    el.style.background = pick(CONFETTI_COLORS);
+    el.style.animationDuration = 1.6 + Math.random() * 1.2 + "s";
+    el.style.opacity = String(0.8 + Math.random() * 0.2);
+    layer.appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+  }
+}
+
+function floatEmojiFromPet(emoji) {
+  const stage = document.querySelector(".pet-stage");
+  if (!stage) return;
+  const el = document.createElement("div");
+  el.className = "float-emoji";
+  el.textContent = emoji;
+  const rect = stage.getBoundingClientRect();
+  el.style.left = rect.width / 2 - 12 + (Math.random() * 40 - 20) + "px";
+  el.style.top = "50px";
+  stage.appendChild(el);
+  setTimeout(() => el.remove(), 1200);
+}
+
+/* ---------------------------------------------------------
+   Rendering
+   --------------------------------------------------------- */
+function setBubble(text) {
+  const el = document.getElementById("pet-bubble");
+  if (el) el.textContent = text;
+}
+
+function greetingForNow() {
+  const h = new Date().getHours();
+  if (h < 10) return pick(GREETING_MORNING);
+  if (h < 17) return pick(GREETING_AFTERNOON);
+  return pick(GREETING_EVENING);
+}
+
+function updateStatsUI() {
+  document.getElementById("pet-name-display").textContent = state.petName;
+  document.getElementById("pet-level").textContent = "Lvl " + state.level;
+
+  const xpPct = clamp((state.xp / xpToNext(state.level)) * 100, 0, 100);
+  document.getElementById("xp-fill").style.width = xpPct + "%";
+  document.getElementById("hunger-fill").style.width = state.hunger + "%";
+  document.getElementById("happiness-fill").style.width = state.happiness + "%";
+
+  document.getElementById("streak-count").textContent = state.streak;
+  document.getElementById("food-count").textContent = state.food;
+  document.getElementById("love-count").textContent = state.love;
+
+  document.getElementById("feed-btn").disabled = state.food <= 0;
+  document.getElementById("love-btn").disabled = state.love <= 0;
+
+  const doneCount = Object.keys(state.completedToday).length;
+  document.getElementById("daily-progress-text").textContent = `${doneCount} / ${TOTAL_TASK_COUNT}`;
+  document.getElementById("daily-progress-fill").style.width = clamp((doneCount / TOTAL_TASK_COUNT) * 100, 0, 100) + "%";
+
+  if (state.hunger <= 25) setBubble(pick(LOW_HUNGER_BUBBLE));
+  else if (state.happiness <= 25) setBubble(pick(LOW_HAPPINESS_BUBBLE));
+}
+
+function renderTaskSections() {
+  const container = document.getElementById("task-sections");
+  container.innerHTML = "";
+
+  TASK_SECTIONS.forEach((section) => {
+    const doneInSection = section.tasks.filter((t) => state.completedToday[t.id]).length;
+    const collapsed = !!state.sectionsCollapsed[section.id];
+
+    const sectionEl = document.createElement("div");
+    sectionEl.className = "task-section" + (collapsed ? " collapsed" : "");
+    sectionEl.innerHTML = `
+      <div class="task-section-header" data-section="${section.id}">
+        <span class="task-section-emoji">${section.emoji}</span>
+        <span class="task-section-title">${section.title}</span>
+        <span class="task-section-progress">${doneInSection}/${section.tasks.length}</span>
+        <span class="task-section-chevron">▾</span>
+      </div>
+      <ul class="task-list">
+        ${section.tasks
+          .map((t) => {
+            const done = !!state.completedToday[t.id];
+            return `
+            <li class="task-item${done ? " done" : ""}" data-task="${t.id}" data-section="${section.id}">
+              <span class="task-checkbox">${done ? "✓" : ""}</span>
+              <span class="task-emoji">${t.emoji}</span>
+              <span class="task-label">${t.text}</span>
+            </li>`;
+          })
+          .join("")}
+      </ul>
+    `;
+    container.appendChild(sectionEl);
+  });
+}
+
+function renderAll() {
+  updatePetAvatars("happy");
+  updateStatsUI();
+  renderTaskSections();
+  setBubble(greetingForNow().replace("!", `, ${state.petName || "vän"}!`));
+}
+
+/* ---------------------------------------------------------
+   Logik: klara uppgift, mata, ge kärlek
+   --------------------------------------------------------- */
+function completeTask(taskId, sectionId) {
+  const alreadyDone = !!state.completedToday[taskId];
+
+  if (alreadyDone) {
+    delete state.completedToday[taskId];
+    saveState();
+    renderTaskSections();
+    updateStatsUI();
+    return;
+  }
+
+  state.completedToday[taskId] = true;
+
+  if (!state.rewardedToday[taskId]) {
+    state.rewardedToday[taskId] = true;
+    state.xp += XP_PER_TASK;
+    state.food += FOOD_PER_TASK;
+    state.love += LOVE_PER_TASK;
+    state.totalCompleted += 1;
+
+    let leveledUp = false;
+    while (state.xp >= xpToNext(state.level)) {
+      state.xp -= xpToNext(state.level);
+      state.level += 1;
+      state.food += 2;
+      state.love += 2;
+      leveledUp = true;
+    }
+
+    showToast(pick(TASK_MESSAGES));
+    burstConfetti(14);
+    flashMood("love", 900);
+
+    if (leveledUp) {
+      setTimeout(() => {
+        showToast(pick(LEVEL_UP_MESSAGES), true);
+        burstConfetti(30);
+      }, 350);
+    }
+
+    const section = TASK_SECTIONS.find((s) => s.id === sectionId);
+    const sectionDone = section.tasks.every((t) => state.completedToday[t.id]);
+    if (sectionDone) {
+      setTimeout(() => showToast(pick(SECTION_COMPLETE_MESSAGES)), leveledUp ? 750 : 400);
+      burstConfetti(20);
+    }
+
+    const allDone = Object.keys(state.completedToday).length >= TOTAL_TASK_COUNT;
+    if (allDone) {
+      setTimeout(() => {
+        showToast(pick(ALL_DONE_MESSAGES), true);
+        burstConfetti(50);
+      }, sectionDone ? 1100 : 500);
+    }
+  }
+
+  saveState();
+  renderTaskSections();
+  updateStatsUI();
+}
+
+function feedPet() {
+  if (state.food <= 0) return;
+  state.food -= 1;
+  state.hunger = clamp(state.hunger + 20, 0, 100);
+  saveState();
+  updateStatsUI();
+  floatEmojiFromPet("🍤");
+  setBubble(pick(FOOD_MESSAGES));
+  flashMood("yum", 900);
+  document.getElementById("pet-avatar-big").classList.add("pulse-once");
+  setTimeout(() => document.getElementById("pet-avatar-big").classList.remove("pulse-once"), 500);
+}
+
+function lovePet() {
+  if (state.love <= 0) return;
+  state.love -= 1;
+  state.happiness = clamp(state.happiness + 20, 0, 100);
+  saveState();
+  updateStatsUI();
+  floatEmojiFromPet("💕");
+  setBubble(pick(LOVE_MESSAGES));
+  flashMood("love", 900);
+  document.getElementById("pet-avatar-big").classList.add("pulse-once");
+  setTimeout(() => document.getElementById("pet-avatar-big").classList.remove("pulse-once"), 500);
+}
+
+/* ---------------------------------------------------------
+   Start-skärm
+   --------------------------------------------------------- */
+function initStartScreen() {
+  let chosenPet = null;
+  const choices = document.querySelectorAll(".pet-choice");
+  const nameInput = document.getElementById("pet-name-input");
+  const startBtn = document.getElementById("start-btn");
+
+  choices.forEach((btn) => {
+    const previewEl = btn.querySelector(".pet-avatar-preview");
+    previewEl.innerHTML = petSVG(btn.dataset.pet, "happy", 1);
+    btn.addEventListener("click", () => {
+      chosenPet = btn.dataset.pet;
+      choices.forEach((b) => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      validateStart();
+    });
+  });
+
+  function validateStart() {
+    startBtn.disabled = !(chosenPet && nameInput.value.trim().length > 0);
+  }
+  nameInput.addEventListener("input", validateStart);
+
+  startBtn.addEventListener("click", () => {
+    if (!chosenPet || !nameInput.value.trim()) return;
+    state.petType = chosenPet;
+    state.petName = nameInput.value.trim().slice(0, 16);
+    state.lastActiveDate = todayStr();
+    saveState();
+    showAppScreen();
+  });
+}
+
+function showAppScreen() {
+  document.getElementById("screen-start").classList.remove("active");
+  document.getElementById("screen-app").classList.add("active");
+  renderAll();
+}
+
+/* ---------------------------------------------------------
+   Event delegation
+   --------------------------------------------------------- */
+function initAppEvents() {
+  document.getElementById("task-sections").addEventListener("click", (e) => {
+    const header = e.target.closest(".task-section-header");
+    if (header) {
+      const id = header.dataset.section;
+      state.sectionsCollapsed[id] = !state.sectionsCollapsed[id];
+      saveState();
+      renderTaskSections();
+      return;
+    }
+    const item = e.target.closest(".task-item");
+    if (item) {
+      completeTask(item.dataset.task, item.dataset.section);
+    }
+  });
+
+  document.getElementById("feed-btn").addEventListener("click", feedPet);
+  document.getElementById("love-btn").addEventListener("click", lovePet);
+
+  document.getElementById("reset-btn").addEventListener("click", () => {
+    if (confirm("Vill du verkligen börja om helt? Allt sparat försvinner. 🥺")) {
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    }
+  });
+}
+
+/* ---------------------------------------------------------
+   Init
+   --------------------------------------------------------- */
+function init() {
+  handleDailyReset();
+  initAppEvents();
+
+  if (state.petType) {
+    showAppScreen();
+  } else {
+    document.getElementById("screen-start").classList.add("active");
+    initStartScreen();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", init);

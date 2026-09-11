@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>Sassibrass 🦈🦭</title>
+<meta name="theme-color" content="#ffd6e8" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦈</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="bubbles-bg" aria-hidden="true"></div>
+
+<!-- ================= START SCREEN ================= -->
+<section id="screen-start" class="screen active">
+  <div class="card start-card">
+    <h1 class="app-title">Sassibrass <span class="wiggle">🦈🦭</span></h1>
+    <p class="subtitle">Din gulliga haj- &amp; sälkompis som peppar dig genom dagen!</p>
+
+    <div class="pet-picker">
+      <button class="pet-choice" data-pet="shark">
+        <div class="pet-avatar-preview" data-preview="shark"></div>
+        <span>Haj</span>
+      </button>
+      <button class="pet-choice" data-pet="seal">
+        <div class="pet-avatar-preview" data-preview="seal"></div>
+        <span>Säl</span>
+      </button>
+    </div>
+
+    <input id="pet-name-input" class="name-input" type="text" maxlength="16" placeholder="Ge ditt djur ett namn ✨" />
+
+    <button id="start-btn" class="btn-primary" disabled>Börja äventyret! 🌊</button>
+  </div>
+</section>
+
+<!-- ================= MAIN APP ================= -->
+<section id="screen-app" class="screen">
+
+  <header class="topbar">
+    <div class="pet-mini">
+      <div id="pet-avatar" class="pet-avatar"></div>
+      <div class="pet-info">
+        <div class="pet-name-row">
+          <span id="pet-name-display" class="pet-name"></span>
+          <span id="pet-level" class="pet-level">Lvl 1</span>
+        </div>
+        <div class="stat-bar">
+          <span class="stat-icon">✨</span>
+          <div class="bar"><div id="xp-fill" class="bar-fill xp"></div></div>
+        </div>
+        <div class="stat-bar">
+          <span class="stat-icon">🍤</span>
+          <div class="bar"><div id="hunger-fill" class="bar-fill hunger"></div></div>
+        </div>
+        <div class="stat-bar">
+          <span class="stat-icon">💕</span>
+          <div class="bar"><div id="happiness-fill" class="bar-fill happiness"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="streak-chip">🔥 <span id="streak-count">0</span></div>
+      <button id="reset-btn" class="icon-btn" title="Börja om (rensar allt)">⚙️</button>
+    </div>
+  </header>
+
+  <div class="pet-stage">
+    <div id="pet-avatar-big" class="pet-avatar-big"></div>
+    <div id="pet-bubble" class="pet-speech-bubble">Hej! Redo för en pepp-dag? 💫</div>
+    <div class="feed-buttons">
+      <button id="feed-btn" class="feed-btn">
+        🍤 Ge mat <span id="food-count" class="count-badge">0</span>
+      </button>
+      <button id="love-btn" class="feed-btn love">
+        💕 Ge kärlek <span id="love-count" class="count-badge">0</span>
+      </button>
+    </div>
+  </div>
+
+  <main id="task-sections" class="task-sections"></main>
+
+  <div class="daily-progress">
+    <div class="daily-progress-label">
+      <span>Dagens uppgifter</span>
+      <span id="daily-progress-text">0 / 0</span>
+    </div>
+    <div class="bar big"><div id="daily-progress-fill" class="bar-fill daily"></div></div>
+  </div>
+
+</section>
+
+<!-- toast / celebration layer -->
+<div id="toast-layer"></div>
+<div id="confetti-layer"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

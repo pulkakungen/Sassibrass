@@ -7,6 +7,76 @@
 const STORAGE_KEY = "sassibrass_state_v1";
 
 /* ---------------------------------------------------------
+   Push-notiser (Cloudflare Worker)
+   --------------------------------------------------------- */
+// Byt ut mot din riktiga worker-URL efter `wrangler deploy`, t.ex.
+// "https://sassibrass-push.ditt-konto.workers.dev"
+const PUSH_WORKER_URL = "https://sassibrass-push.example.workers.dev";
+const VAPID_PUBLIC_KEY = "BD3EfJvaUYdJgWzqt-OhSEPOIQcQKUkPjwqx1-gzD5iowBG6Lso6Zi591K3Xk8jd7MSOtdDtrxKaaF1dZTGa5fw";
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
+}
+
+async function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return null;
+  try {
+    return await navigator.serviceWorker.register("sw.js");
+  } catch (e) {
+    return null;
+  }
+}
+
+async function getPushSubscription() {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return null;
+  const reg = await navigator.serviceWorker.ready;
+  return reg.pushManager.getSubscription();
+}
+
+async function enablePushNotifications() {
+  if (!("Notification" in window) || !("PushManager" in window)) {
+    alert("Din webbläsare stödjer tyvärr inte push-notiser.");
+    return false;
+  }
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") return false;
+
+  const reg = await navigator.serviceWorker.ready;
+  const subscription = await reg.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+  });
+
+  await fetch(PUSH_WORKER_URL + "/subscribe", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(subscription)
+  }).catch(() => {});
+
+  return true;
+}
+
+async function disablePushNotifications() {
+  const sub = await getPushSubscription();
+  if (sub) {
+    await sub.unsubscribe();
+  }
+  await fetch(PUSH_WORKER_URL + "/unsubscribe", { method: "POST" }).catch(() => {});
+}
+
+function syncStateToWorker() {
+  const allDoneToday = Object.keys(state.completedToday).length >= totalTasksToday();
+  fetch(PUSH_WORKER_URL + "/sync", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ allDoneToday })
+  }).catch(() => {});
+}
+
+/* ---------------------------------------------------------
    Uppgifter, indelade i sektioner för hela dagen
    --------------------------------------------------------- */
 // days: valfri lista med veckodagsnummer (0=söndag ... 6=lördag) uppgiften gäller.
@@ -591,6 +661,7 @@ function completeTask(taskId, sectionId) {
   saveState();
   renderTaskSections();
   updateStatsUI();
+  syncStateToWorker();
 }
 
 function feedPet() {
@@ -654,10 +725,13 @@ function initStartScreen() {
   });
 }
 
-function showAppScreen() {
+async function showAppScreen() {
   document.getElementById("screen-start").classList.remove("active");
   document.getElementById("screen-app").classList.add("active");
   renderAll();
+
+  const sub = await getPushSubscription();
+  if (sub) document.getElementById("notif-btn").classList.add("active");
 }
 
 /* ---------------------------------------------------------
@@ -682,6 +756,25 @@ function initAppEvents() {
   document.getElementById("feed-btn").addEventListener("click", feedPet);
   document.getElementById("love-btn").addEventListener("click", lovePet);
 
+  document.getElementById("notif-btn").addEventListener("click", async () => {
+    const btn = document.getElementById("notif-btn");
+    const existing = await getPushSubscription();
+    if (existing) {
+      await disablePushNotifications();
+      btn.classList.remove("active");
+      showToast("Påminnelser avstängda 🔕");
+    } else {
+      const ok = await enablePushNotifications();
+      if (ok) {
+        btn.classList.add("active");
+        showToast("Påminnelser på! Djuret hör av sig 🔔💕");
+        syncStateToWorker();
+      } else {
+        showToast("Kunde inte slå på påminnelser 😢");
+      }
+    }
+  });
+
   document.getElementById("reset-btn").addEventListener("click", () => {
     if (confirm("Vill du verkligen börja om helt? Allt sparat försvinner. 🥺")) {
       localStorage.removeItem(STORAGE_KEY);
@@ -696,6 +789,7 @@ function initAppEvents() {
 function init() {
   handleDailyReset();
   initAppEvents();
+  registerServiceWorker();
 
   if (state.petType) {
     showAppScreen();

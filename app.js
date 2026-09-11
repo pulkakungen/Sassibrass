@@ -160,6 +160,8 @@ const TASK_SECTIONS = [
       { id: "tvatta-ansikte-kvall", emoji: "💦", text: "Tvätta ansiktet" },
       { id: "tander-kvall", emoji: "🪥", text: "Borsta tänderna" },
       { id: "klader-imorgon", emoji: "🧦", text: "Lägg fram kläder till imorgon" },
+      { id: "padda-laddning", emoji: "🔌", text: "Sätt paddan på laddning" },
+      { id: "tandborste-laddning", emoji: "🪥", text: "Ladda eltandborsten", parity: "even" },
       { id: "meditera", emoji: "🧘‍♀️", text: "Meditera" },
       { id: "dagbok", emoji: "📓", text: "Skriv dagbok" },
       { id: "las-bok", emoji: "📚", text: "Läs bok" },
@@ -170,21 +172,33 @@ const TASK_SECTIONS = [
 
 const WEEKDAY_NAMES = ["söndag", "måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag"];
 
-function isTaskActiveOnDay(task, dayNum) {
-  return !task.days || task.days.includes(dayNum);
+function dayOfYear(date) {
+  const start = new Date(date.getFullYear(), 0, 1);
+  return Math.floor((date - start) / 86400000) + 1;
+}
+
+// task.days: begränsar till vissa veckodagar. task.parity: "even"/"odd" ger "varannan dag"-uppgifter.
+function isTaskActiveOnDate(task, date) {
+  if (task.days && !task.days.includes(date.getDay())) return false;
+  if (task.parity) {
+    const isEven = dayOfYear(date) % 2 === 0;
+    if (task.parity === "even" && !isEven) return false;
+    if (task.parity === "odd" && isEven) return false;
+  }
+  return true;
 }
 function isTaskActiveToday(task) {
-  return isTaskActiveOnDay(task, new Date().getDay());
+  return isTaskActiveOnDate(task, new Date());
 }
-function activeTasksForSection(section, dayNum) {
-  const d = dayNum === undefined ? new Date().getDay() : dayNum;
-  return section.tasks.filter((t) => isTaskActiveOnDay(t, d));
+function activeTasksForSection(section, date) {
+  const d = date === undefined ? new Date() : date;
+  return section.tasks.filter((t) => isTaskActiveOnDate(t, d));
 }
-function totalTasksForDay(dayNum) {
-  return TASK_SECTIONS.reduce((s, sec) => s + activeTasksForSection(sec, dayNum).length, 0);
+function totalTasksForDate(date) {
+  return TASK_SECTIONS.reduce((s, sec) => s + activeTasksForSection(sec, date).length, 0);
 }
 function totalTasksToday() {
-  return totalTasksForDay(new Date().getDay());
+  return totalTasksForDate(new Date());
 }
 
 const XP_PER_TASK = 15;
@@ -335,8 +349,8 @@ function handleDailyReset() {
 
   if (state.lastActiveDate) {
     const completedCount = Object.keys(state.completedToday).length;
-    const lastActiveDayNum = new Date(state.lastActiveDate + "T00:00:00").getDay();
-    const wasFullDay = completedCount >= totalTasksForDay(lastActiveDayNum);
+    const lastActiveDateObj = new Date(state.lastActiveDate + "T00:00:00");
+    const wasFullDay = completedCount >= totalTasksForDate(lastActiveDateObj);
     const consecutive = isConsecutiveDay(state.lastActiveDate, today);
 
     if (wasFullDay && (consecutive || state.streak === 0)) {

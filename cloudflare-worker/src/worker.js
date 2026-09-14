@@ -357,6 +357,20 @@ export default {
       return buildReportCsv(env);
     }
 
+    if (url.pathname === "/admin/clear-history" && request.method === "GET") {
+      let cleared = 0;
+      let cursor;
+      do {
+        const page = await env.PUSH_KV.list({ prefix: HISTORY_PREFIX, cursor });
+        for (const key of page.keys) {
+          await env.PUSH_KV.delete(key.name);
+          cleared++;
+        }
+        cursor = page.list_complete ? undefined : page.cursor;
+      } while (cursor);
+      return new Response(`Rensade ${cleared} dagar med historik. Klart! 🧹`, { headers: CORS_HEADERS });
+    }
+
     if (url.pathname === "/" || url.pathname === "") {
       return new Response("Sassibrass push worker is running 🦈", { headers: CORS_HEADERS });
     }

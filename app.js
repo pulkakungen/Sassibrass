@@ -210,12 +210,14 @@ function totalTasksToday() {
   return totalTasksForDate(new Date());
 }
 
-const XP_PER_TASK = 15;
+const XP_PER_TASK = 5;
 const FOOD_PER_TASK = 1;
 const LOVE_PER_TASK = 1;
+const MAX_FOOD = 4; // tak på lagret, så mat/kärlek måste tjänas in löpande istället för att hopa sig
+const MAX_LOVE = 4;
 
 function xpToNext(level) {
-  return 80 + (level - 1) * 30;
+  return 350 + (level - 1) * 80;
 }
 
 /* ---------------------------------------------------------
@@ -641,16 +643,16 @@ function completeTask(taskId, sectionId) {
   if (!state.rewardedToday[taskId]) {
     state.rewardedToday[taskId] = true;
     state.xp += XP_PER_TASK;
-    state.food += FOOD_PER_TASK;
-    state.love += LOVE_PER_TASK;
+    state.food = clamp(state.food + FOOD_PER_TASK, 0, MAX_FOOD);
+    state.love = clamp(state.love + LOVE_PER_TASK, 0, MAX_LOVE);
     state.totalCompleted += 1;
 
     let leveledUp = false;
     while (state.xp >= xpToNext(state.level)) {
       state.xp -= xpToNext(state.level);
       state.level += 1;
-      state.food += 2;
-      state.love += 2;
+      state.food = clamp(state.food + 2, 0, MAX_FOOD);
+      state.love = clamp(state.love + 2, 0, MAX_LOVE);
       leveledUp = true;
     }
 

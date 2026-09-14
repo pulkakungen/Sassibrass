@@ -102,8 +102,9 @@ const TASK_SECTIONS = [
     tasks: [
       { id: "at-frukost", emoji: "🥣", text: "Ät frukost" },
       { id: "drick-vatten", emoji: "💧", text: "Drick vatten" },
+      { id: "drick-kreatin", emoji: "🥤", text: "Drick kreatin" },
       { id: "tander-morgon", emoji: "🪥", text: "Borsta tänderna" },
-      { id: "matsack", emoji: "🍱", text: "Packa matsäck" }
+      { id: "matsack", emoji: "🍱", text: "Packa snacks/bars/frukt" }
     ]
   },
   {
@@ -127,6 +128,7 @@ const TASK_SECTIONS = [
       { id: "papperkartong", emoji: "📦", text: "Gå ut med papper och kartong", days: [DAG_SON] },
       { id: "restavfall", emoji: "🗑️", text: "Gå ut med restavfall", days: [DAG_SON] },
       { id: "mellanmal", emoji: "🍎", text: "Ät ett mellanmål" },
+      { id: "tvatten", emoji: "🧺", text: "Gå ner med tvätten", days: [DAG_MAN, DAG_TORS] },
       { id: "snygga-rum", emoji: "🧹", text: "Snygga upp rummet" },
       { id: "dammsuga", emoji: "🧺", text: "Dammsuga", days: [DAG_LOR] },
       { id: "stada-badrum", emoji: "🚽", text: "Städa badrummet", days: [DAG_LOR] },

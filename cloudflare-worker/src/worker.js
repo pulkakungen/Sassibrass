@@ -11,7 +11,7 @@ const STATE_KEY = "state";
 
 const AWAKE_START_MIN = 8 * 60; // 08:00
 const AWAKE_END_MIN = 21 * 60 + 30; // 21:30
-const NAG_GAP_MS = 3 * 60 * 60 * 1000; // 3 timmar utan aktivitet innan djuret säger till
+const NAG_GAP_MS = 4 * 60 * 60 * 1000; // 4 timmar utan aktivitet innan djuret säger till
 
 const FIXED_REMINDERS = [
   {

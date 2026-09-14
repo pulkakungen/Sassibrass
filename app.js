@@ -91,7 +91,8 @@ const TASK_SECTIONS = [
       { id: "sminka", emoji: "💄", text: "Sminka dig" },
       { id: "kladd", emoji: "👕", text: "Klä på dig" },
       { id: "har", emoji: "💇‍♀️", text: "Fixa håret" },
-      { id: "badda", emoji: "🛏️", text: "Bädda sängen" }
+      { id: "badda", emoji: "🛏️", text: "Bädda sängen" },
+      { id: "affirmation-rutin", emoji: "🪞", text: "Säg veckans affirmation högt i spegeln, eller skriv ner den" }
     ]
   },
   {

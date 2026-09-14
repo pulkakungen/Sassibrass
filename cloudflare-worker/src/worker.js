@@ -52,19 +52,21 @@ const FIXED_REMINDERS = [
   },
   {
     id: "affirmation",
-    hour: 12,
-    minute: 15,
+    hour: 7,
+    minute: 25,
     messages: [
-      "Du är stark, du är snäll och du är helt underbar precis som du är 💖",
-      "Kom ihåg: du behöver inte vara perfekt för att vara värdefull 🌊✨",
-      "Du klarar mer än du tror. Jag tror på dig, alltid 🦈💕",
-      "Det är okej att ha en dålig dag. Du är fortfarande fantastisk 🥰",
-      "Du är värd kärlek, vila och glädje, precis idag 🌸",
-      "Var stolt över dig själv. Du gör så gott du kan, och det räcker 🌟",
-      "Du får ta plats. Din röst och dina känslor spelar roll 💛",
-      "Idag är en bra dag att vara snäll mot dig själv 🦭💗",
-      "Du är inte ensam, jag finns alltid här för dig 🐚✨",
-      "Vilken du än är idag, glad, trött eller mitt emellan, du duger precis så 🌈"
+      "🌟 Veckans affirmation: Jag gör mitt bästa, och mitt bästa är helt och hållet tillräckligt.",
+      "🌟 Veckans affirmation: Jag har förmågan att lära mig svåra saker om jag bara ger det lite tid.",
+      "🌟 Veckans affirmation: Nervositet betyder bara att jag bryr mig, och jag kan kanalisera den till energi.",
+      "🌟 Veckans affirmation: Jag tar ett steg i taget och litar på min egen process och förmåga.",
+      "🌟 Veckans affirmation: Utmaningar gör mig starkare och jag utvecklas varje gång jag försöker.",
+      "🌟 Veckans affirmation: Jag firar mina framsteg, oavsett hur små eller stora de verkar vara.",
+      "🌟 Veckans affirmation: Jag duger precis som jag är, oavsett vad andra tycker eller tänker om mig.",
+      "🌟 Veckans affirmation: Min värdighet mäts inte i mina prestationer eller hur många rätt jag har på ett prov.",
+      "🌟 Veckans affirmation: Jag är stolt över den jag är och jag har unika talanger att bidra med.",
+      "🌟 Veckans affirmation: Jag tillåter mig själv att göra misstag, eftersom misstag hjälper mig att växa.",
+      "🌟 Veckans affirmation: Jag väljer att vara snäll mot mig själv när saker känns svåra eller tunga.",
+      "🌟 Veckans affirmation: Min röst och mina åsikter är viktiga, och jag har rätt att ta plats."
     ]
   }
 ];

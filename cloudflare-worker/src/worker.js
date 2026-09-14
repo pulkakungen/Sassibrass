@@ -49,6 +49,23 @@ const FIXED_REMINDERS = [
       "Snart läggdags... har vi hunnit med kvällsrutinen? 🌙💤",
       "Dags att varva ner! Kolla av kvällens sista uppgifter 🌙🦈"
     ]
+  },
+  {
+    id: "affirmation",
+    hour: 12,
+    minute: 15,
+    messages: [
+      "Du är stark, du är snäll och du är helt underbar precis som du är 💖",
+      "Kom ihåg: du behöver inte vara perfekt för att vara värdefull 🌊✨",
+      "Du klarar mer än du tror. Jag tror på dig, alltid 🦈💕",
+      "Det är okej att ha en dålig dag. Du är fortfarande fantastisk 🥰",
+      "Du är värd kärlek, vila och glädje, precis idag 🌸",
+      "Var stolt över dig själv. Du gör så gott du kan, och det räcker 🌟",
+      "Du får ta plats. Din röst och dina känslor spelar roll 💛",
+      "Idag är en bra dag att vara snäll mot dig själv 🦭💗",
+      "Du är inte ensam, jag finns alltid här för dig 🐚✨",
+      "Vilken du än är idag, glad, trött eller mitt emellan, du duger precis så 🌈"
+    ]
   }
 ];
 

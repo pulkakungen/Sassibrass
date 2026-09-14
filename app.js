@@ -67,10 +67,16 @@ async function disablePushNotifications() {
 
 function syncStateToWorker() {
   const allDoneToday = Object.keys(state.completedToday).length >= totalTasksToday();
+  const tasks = [];
+  TASK_SECTIONS.forEach((section) => {
+    activeTasksForSection(section).forEach((t) => {
+      tasks.push({ id: t.id, text: t.text, done: !!state.completedToday[t.id] });
+    });
+  });
   fetch(PUSH_WORKER_URL + "/sync", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ allDoneToday })
+    body: JSON.stringify({ allDoneToday, tasks })
   }).catch(() => {});
 }
 

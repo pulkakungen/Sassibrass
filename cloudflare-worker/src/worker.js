@@ -8,6 +8,52 @@ const CORS_HEADERS = {
 
 const SUBSCRIPTION_KEY = "subscription";
 const STATE_KEY = "state";
+const HISTORY_PREFIX = "history:";
+
+// Speglar uppgiftslistan i app.js, i samma ordning, så rapporten alltid
+// får samma kolumnordning oavsett vilka uppgifter som var aktiva en viss dag.
+const REPORT_COLUMNS = [
+  { id: "vakna", label: "Vakna och sträck på dig" },
+  { id: "sminka", label: "Sminka dig" },
+  { id: "kladd", label: "Klä på dig" },
+  { id: "har", label: "Fixa håret" },
+  { id: "badda", label: "Bädda sängen" },
+  { id: "affirmation-rutin", label: "Säg veckans affirmation" },
+  { id: "at-frukost", label: "Ät frukost" },
+  { id: "drick-vatten", label: "Drick vatten" },
+  { id: "drick-kreatin", label: "Drick kreatin" },
+  { id: "tander-morgon", label: "Borsta tänderna (morgon)" },
+  { id: "matsack", label: "Packa snacks/bars/frukt" },
+  { id: "padda-bocker", label: "Ta med padda och böcker" },
+  { id: "schema", label: "Kolla schemat" },
+  { id: "till-skolan", label: "Ta dig till skolan i tid" },
+  { id: "matsopor", label: "Matsopor" },
+  { id: "plastsopor", label: "Plastsopor" },
+  { id: "metallglas", label: "Metall- och glassopor" },
+  { id: "papperkartong", label: "Papper och kartong" },
+  { id: "restavfall", label: "Restavfall" },
+  { id: "mellanmal", label: "Mellanmål" },
+  { id: "tvatten", label: "Gå ner med tvätten" },
+  { id: "snygga-rum", label: "Snygga upp rummet" },
+  { id: "dammsuga", label: "Dammsuga" },
+  { id: "stada-badrum", label: "Städa badrummet" },
+  { id: "nedanvaning", label: "Plocka undan grejer nedanvåningen" },
+  { id: "laxa", label: "Gör läxan" },
+  { id: "kompis", label: "Träffa/prata med kompis" },
+  { id: "piano", label: "Piano 10 min" },
+  { id: "cheerleading", label: "Cheerleading" },
+  { id: "duscha", label: "Duscha" },
+  { id: "tvatta-ansikte-kvall", label: "Tvätta ansiktet (kväll)" },
+  { id: "tander-kvall", label: "Borsta tänderna (kväll)" },
+  { id: "klader-imorgon", label: "Lägg fram kläder" },
+  { id: "padda-laddning", label: "Padda på laddning" },
+  { id: "tandborste-laddning", label: "Ladda eltandborste" },
+  { id: "planera-veckan", label: "Planera kommande vecka" },
+  { id: "meditera", label: "Meditera" },
+  { id: "dagbok", label: "Skriv dagbok" },
+  { id: "las-bok", label: "Läs bok" },
+  { id: "lagga-sig", label: "Lägg dig i tid" }
+];
 
 const AWAKE_START_MIN = 8 * 60; // 08:00
 const AWAKE_END_MIN = 21 * 60 + 30; // 21:30
@@ -187,6 +233,53 @@ async function handleScheduled(env) {
   }
 }
 
+function csvEscape(value) {
+  const s = String(value);
+  return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+async function buildReportCsv(env) {
+  const records = {}; // dateStr -> { tasks, allDoneToday }
+  let cursor;
+  do {
+    const page = await env.PUSH_KV.list({ prefix: HISTORY_PREFIX, cursor });
+    for (const key of page.keys) {
+      const raw = await env.PUSH_KV.get(key.name);
+      if (raw) records[key.name.slice(HISTORY_PREFIX.length)] = JSON.parse(raw);
+    }
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+
+  const dates = Object.keys(records).sort();
+  const weekdayNames = ["söndag", "måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag"];
+
+  const header = ["Datum", "Veckodag", ...REPORT_COLUMNS.map((c) => c.label), "Allt klart den dagen"];
+  const rows = [header];
+
+  for (const dateStr of dates) {
+    const record = records[dateStr];
+    const taskById = Object.fromEntries((record.tasks || []).map((t) => [t.id, t]));
+    const weekday = weekdayNames[new Date(dateStr + "T12:00:00Z").getUTCDay()];
+    const row = [dateStr, weekday];
+    for (const col of REPORT_COLUMNS) {
+      const t = taskById[col.id];
+      row.push(t ? (t.done ? "Ja" : "Nej") : "–");
+    }
+    row.push(record.allDoneToday ? "Ja" : "Nej");
+    rows.push(row);
+  }
+
+  const csv = "﻿" + rows.map((r) => r.map(csvEscape).join(";")).join("\r\n");
+
+  return new Response(csv, {
+    headers: {
+      ...CORS_HEADERS,
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": 'attachment; filename="sassibrass-rapport.csv"'
+    }
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -222,7 +315,21 @@ export default {
         state.lastNagAt = existing.lastSyncDateStr === dateStr ? existing.lastNagAt : null;
       }
       await env.PUSH_KV.put(STATE_KEY, JSON.stringify(state));
+
+      await env.PUSH_KV.put(
+        HISTORY_PREFIX + dateStr,
+        JSON.stringify({
+          tasks: Array.isArray(body.tasks) ? body.tasks : [],
+          allDoneToday: !!body.allDoneToday,
+          updatedAt: new Date().toISOString()
+        })
+      );
+
       return json({ ok: true });
+    }
+
+    if (url.pathname === "/report" && request.method === "GET") {
+      return buildReportCsv(env);
     }
 
     if (url.pathname === "/" || url.pathname === "") {

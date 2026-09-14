@@ -16,8 +16,8 @@ const NAG_GAP_MS = 4 * 60 * 60 * 1000; // 4 timmar utan aktivitet innan djuret s
 const FIXED_REMINDERS = [
   {
     id: "morgon",
-    hour: 7,
-    minute: 0,
+    hour: 6,
+    minute: 35,
     messages: [
       "God morgon! Dags att vakna, jag väntar på dig! ☀️🦈",
       "Rise and shine! En ny superdag börjar nu 🌊✨"
@@ -25,8 +25,8 @@ const FIXED_REMINDERS = [
   },
   {
     id: "frukost",
-    hour: 7,
-    minute: 45,
+    hour: 6,
+    minute: 55,
     messages: [
       "Frukostdags! Kom och mata mig med något gott du också 🍳🦭",
       "Psst, dags för frukost innan skolan! 🥣💕"
@@ -52,8 +52,8 @@ const FIXED_REMINDERS = [
   },
   {
     id: "affirmation",
-    hour: 7,
-    minute: 25,
+    hour: 6,
+    minute: 45,
     messages: [
       "🌟 Veckans affirmation: Jag gör mitt bästa, och mitt bästa är helt och hållet tillräckligt.",
       "🌟 Veckans affirmation: Jag har förmågan att lära mig svåra saker om jag bara ger det lite tid.",

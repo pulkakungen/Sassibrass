@@ -57,6 +57,12 @@ const FIXED_REMINDERS = [
     ]
   },
   {
+    id: "mamma-godnatt",
+    hour: 21,
+    minute: 30,
+    messages: ["God natt, söta drömmar, jag älskar dig. Puss puss. Vi ses i morgon ❤️"]
+  },
+  {
     id: "affirmation",
     hour: 6,
     minute: 45,

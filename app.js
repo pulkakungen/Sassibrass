@@ -9,9 +9,7 @@ const STORAGE_KEY = "sassibrass_state_v1";
 /* ---------------------------------------------------------
    Push-notiser (Cloudflare Worker)
    --------------------------------------------------------- */
-// Byt ut mot din riktiga worker-URL efter `wrangler deploy`, t.ex.
-// "https://sassibrass-push.ditt-konto.workers.dev"
-const PUSH_WORKER_URL = "https://sassibrass-push.example.workers.dev";
+const PUSH_WORKER_URL = "https://sassibrass-push.bella-sassibrass.workers.dev";
 const VAPID_PUBLIC_KEY = "BD3EfJvaUYdJgWzqt-OhSEPOIQcQKUkPjwqx1-gzD5iowBG6Lso6Zi591K3Xk8jd7MSOtdDtrxKaaF1dZTGa5fw";
 
 function urlBase64ToUint8Array(base64String) {

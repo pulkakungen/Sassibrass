@@ -260,7 +260,7 @@ async function handleScheduled(env) {
 
 function csvEscape(value) {
   const s = String(value);
-  return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  return /[,"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
 }
 
 async function buildReportCsv(env) {
@@ -294,7 +294,7 @@ async function buildReportCsv(env) {
     rows.push(row);
   }
 
-  const csv = "﻿" + rows.map((r) => r.map(csvEscape).join(";")).join("\r\n");
+  const csv = "﻿" + rows.map((r) => r.map(csvEscape).join(",")).join("\r\n");
 
   return new Response(csv, {
     headers: {

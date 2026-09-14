@@ -36,7 +36,7 @@ const FIXED_REMINDERS = [
     id: "mamma-hej",
     hour: 7,
     minute: 45,
-    messages: ["Ha en fin dag i skolan. Jag älskar dig <3 / mamma"]
+    messages: ["Ha en fin dag i skolan. Jag älskar dig ❤️ / mamma"]
   },
   {
     id: "eftermiddag",

@@ -138,7 +138,8 @@ const TASK_SECTIONS = [
     title: "Socialt & läxor",
     tasks: [
       { id: "laxa", emoji: "📖", text: "Gör läxan" },
-      { id: "kompis", emoji: "💬", text: "Träffa eller prata med en kompis" }
+      { id: "kompis", emoji: "💬", text: "Träffa eller prata med en kompis" },
+      { id: "piano", emoji: "🎹", text: "Träna piano 10 minuter", days: [DAG_MAN, DAG_ONS] }
     ]
   },
   {
@@ -160,6 +161,7 @@ const TASK_SECTIONS = [
       { id: "klader-imorgon", emoji: "🧦", text: "Lägg fram kläder till imorgon" },
       { id: "padda-laddning", emoji: "🔌", text: "Sätt paddan på laddning" },
       { id: "tandborste-laddning", emoji: "🪥", text: "Ladda eltandborsten", parity: "even" },
+      { id: "planera-veckan", emoji: "🗒️", text: "Planera din kommande vecka", days: [DAG_SON] },
       { id: "meditera", emoji: "🧘‍♀️", text: "Meditera" },
       { id: "dagbok", emoji: "📓", text: "Skriv dagbok" },
       { id: "las-bok", emoji: "📚", text: "Läs bok" },

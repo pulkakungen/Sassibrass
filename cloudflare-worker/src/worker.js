@@ -59,6 +59,22 @@ const AWAKE_START_MIN = 8 * 60; // 08:00
 const AWAKE_END_MIN = 21 * 60 + 30; // 21:30
 const NAG_GAP_MS = 4 * 60 * 60 * 1000; // 4 timmar utan aktivitet innan djuret säger till
 
+// Mobilfritt i skolan - "jag är hungrig"-naggandet ska aldrig skickas då,
+// hon kan ju inte göra något åt det förrän hon får mobilen tillbaka.
+// 1=måndag ... 5=fredag (samma nummerordning som Date.getDay()).
+const SCHOOL_BLOCKS = {
+  1: [8 * 60 + 30, 14 * 60 + 30], // måndag 08:30-14:30
+  2: [8 * 60, 15 * 60], // tisdag 08:00-15:00
+  3: [8 * 60, 16 * 60 + 30], // onsdag 08:00-16:30
+  4: [8 * 60, 15 * 60 + 30], // torsdag 08:00-15:30
+  5: [8 * 60, 13 * 60 + 55] // fredag 08:00-13:55
+};
+
+function inSchoolBlock(minutesOfDay, weekday) {
+  const block = SCHOOL_BLOCKS[weekday];
+  return !!block && minutesOfDay >= block[0] && minutesOfDay < block[1];
+}
+
 const FIXED_REMINDERS = [
   {
     id: "morgon",
@@ -83,15 +99,6 @@ const FIXED_REMINDERS = [
     hour: 7,
     minute: 45,
     messages: ["Ha en fin dag i skolan. Jag älskar dig ❤️ / mamma"]
-  },
-  {
-    id: "eftermiddag",
-    hour: 15,
-    minute: 30,
-    messages: [
-      "Hej igen! Dags att kolla läxor, sopor och sånt hemma 🎒🍂",
-      "Eftermiddagen är här - vad står på listan idag? 📋✨"
-    ]
   },
   {
     id: "kvall",
@@ -152,9 +159,11 @@ function stockholmParts(date) {
     hour12: false
   });
   const parts = Object.fromEntries(fmt.formatToParts(date).map((p) => [p.type, p.value]));
+  const dateStr = `${parts.year}-${parts.month}-${parts.day}`;
   return {
-    dateStr: `${parts.year}-${parts.month}-${parts.day}`,
-    minutesOfDay: parseInt(parts.hour, 10) * 60 + parseInt(parts.minute, 10)
+    dateStr,
+    minutesOfDay: parseInt(parts.hour, 10) * 60 + parseInt(parts.minute, 10),
+    weekday: new Date(dateStr + "T12:00:00Z").getUTCDay()
   };
 }
 
@@ -190,9 +199,12 @@ async function sendPush(env, message) {
   return res.ok;
 }
 
+const SCHOOL_END_MESSAGE =
+  "Snart slut för idag! Glöm inte packa med dig böckerna hem, och kolla vad som står på listan 📚🎒";
+
 async function handleScheduled(env) {
   const now = new Date();
-  const { dateStr, minutesOfDay } = stockholmParts(now);
+  const { dateStr, minutesOfDay, weekday } = stockholmParts(now);
 
   const hasSub = !!(await env.PUSH_KV.get(SUBSCRIPTION_KEY));
   if (!hasSub) return;
@@ -212,8 +224,21 @@ async function handleScheduled(env) {
     }
   }
 
+  // --- "Snart slut för idag, glöm inte böckerna" - 30 min innan just den dagens skolslut ---
+  const schoolBlock = SCHOOL_BLOCKS[weekday];
+  if (schoolBlock) {
+    const reminderStart = schoolBlock[1] - 30;
+    const withinSchoolEndWindow = minutesOfDay >= reminderStart && minutesOfDay < reminderStart + 15;
+    if (withinSchoolEndWindow && !sent.includes("skoldagslut")) {
+      await sendPush(env, SCHOOL_END_MESSAGE);
+      sent.push("skoldagslut");
+      await env.PUSH_KV.put(sentKey, JSON.stringify(sent), { expirationTtl: 60 * 60 * 48 });
+    }
+  }
+
   // --- "Jag är hungrig"-nagging om hon varit inaktiv länge ---
   if (minutesOfDay < AWAKE_START_MIN || minutesOfDay > AWAKE_END_MIN) return;
+  if (inSchoolBlock(minutesOfDay, weekday)) return; // mobilfritt i skolan, inget nag då
 
   const stateRaw = await env.PUSH_KV.get(STATE_KEY);
   const state = stateRaw ? JSON.parse(stateRaw) : null;

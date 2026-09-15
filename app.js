@@ -334,6 +334,9 @@ function defaultState() {
     hunger: 80,
     happiness: 80,
     lastStatDecayAt: null,
+    hasBaby: false,
+    babyName: "",
+    nextBabyLevel: 30,
     streak: 0,
     lastActiveDate: null,
     completedToday: {},
@@ -733,8 +736,52 @@ function renderAll() {
   updatePetAvatars("happy");
   updateStatsUI();
   renderTaskSections();
+  renderBabyAvatar();
   setBubble(greetingForNow().replace("!", `, ${state.petName || "vän"}!`));
   document.getElementById("demo-badge").hidden = !DEMO_MODE;
+}
+
+/* ---------------------------------------------------------
+   Bebis: dyker upp vid nextBabyLevel, val en nivå senare
+   --------------------------------------------------------- */
+function renderBabyAvatar() {
+  const wrap = document.getElementById("baby-avatar-wrap");
+  if (!wrap) return;
+  if (!state.hasBaby) {
+    wrap.hidden = true;
+    return;
+  }
+  wrap.hidden = false;
+  document.getElementById("baby-avatar").innerHTML = petSVG(state.petType, "happy", 1);
+  document.getElementById("baby-name-tag").textContent = state.babyName;
+}
+
+function showBabyChoiceModal() {
+  const modal = document.getElementById("baby-choice-modal");
+  document.getElementById("baby-choice-text").textContent =
+    `${state.babyName} har vuxit och är redo för nästa steg. Vill du börja om helt från början med ${state.babyName} som ditt nya djur, eller låta ${state.babyName} flytta hemifrån och fortsätta som vanligt med ${state.petName}?`;
+  modal.hidden = false;
+}
+
+function hideBabyChoiceModal() {
+  document.getElementById("baby-choice-modal").hidden = true;
+}
+
+function checkBabyMilestones() {
+  if (!state.hasBaby && state.level >= state.nextBabyLevel) {
+    const input = prompt("En bebis har anlänt! Vad ska hon heta? 🍼", "");
+    const name = (input || "Lillen").trim().slice(0, 16) || "Lillen";
+    state.hasBaby = true;
+    state.babyName = name;
+    saveState();
+    renderBabyAvatar();
+    showToast(`En bebis har anlänt! Välkommen, ${name}! 🍼💕`, true);
+    burstConfetti(30);
+    return;
+  }
+  if (state.hasBaby && state.level >= state.nextBabyLevel + 1) {
+    showBabyChoiceModal();
+  }
 }
 
 /* ---------------------------------------------------------
@@ -796,6 +843,8 @@ function completeTask(taskId, sectionId) {
           burstConfetti(24);
         }, extraDelay);
       }
+
+      checkBabyMilestones();
     }
 
     const section = TASK_SECTIONS.find((s) => s.id === sectionId);
@@ -885,6 +934,7 @@ async function showAppScreen() {
   document.getElementById("screen-start").classList.remove("active");
   document.getElementById("screen-app").classList.add("active");
   renderAll();
+  checkBabyMilestones();
 
   const sub = await getPushSubscription();
   if (sub) document.getElementById("notif-btn").classList.add("active");
@@ -940,6 +990,40 @@ function initAppEvents() {
       localStorage.removeItem(STORAGE_KEY);
       location.reload();
     }
+  });
+
+  document.getElementById("baby-restart-btn").addEventListener("click", () => {
+    const babyName = state.babyName;
+    state.petName = babyName;
+    state.level = 1;
+    state.xp = 0;
+    state.food = 2;
+    state.love = 2;
+    state.hunger = 80;
+    state.happiness = 80;
+    state.lastStatDecayAt = new Date().toISOString();
+    state.streak = 0;
+    state.completedToday = {};
+    state.rewardedToday = {};
+    state.hasBaby = false;
+    state.babyName = "";
+    state.nextBabyLevel = 30;
+    saveState();
+    hideBabyChoiceModal();
+    renderAll();
+    showToast(`Ny resa påbörjad med ${babyName}! 🍼✨`, true);
+    burstConfetti(30);
+  });
+
+  document.getElementById("baby-moveout-btn").addEventListener("click", () => {
+    const babyName = state.babyName;
+    state.hasBaby = false;
+    state.babyName = "";
+    state.nextBabyLevel += 30;
+    saveState();
+    hideBabyChoiceModal();
+    renderAll();
+    showToast(`${babyName} flyttade hemifrån, lycka till där ute! Hon finns alltid kvar i minnet 💕`, true);
   });
 }
 

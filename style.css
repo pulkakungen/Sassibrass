@@ -169,6 +169,61 @@ button {
 .btn-primary:not(:disabled):hover { transform: translateY(-2px); }
 .btn-primary:not(:disabled):active { transform: translateY(0); }
 
+.btn-secondary {
+  background: #fff;
+  color: var(--ink);
+  font-family: 'Baloo 2', cursive;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 12px 20px;
+  border-radius: 999px;
+  width: 100%;
+  border: 2px solid var(--lavender-dark);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.btn-secondary:hover { transform: translateY(-2px); background: var(--lavender); }
+.btn-secondary:active { transform: translateY(0); }
+
+/* ---------- modal (bebis-valet m.m.) ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(90, 74, 107, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  padding: 20px;
+}
+.modal-overlay[hidden] { display: none; }
+.modal-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 28px 24px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+}
+.modal-emoji { font-size: 2.4rem; margin-bottom: 6px; }
+.modal-title {
+  font-family: 'Baloo 2', cursive;
+  font-size: 1.2rem;
+  color: var(--pink-dark);
+  margin: 0 0 10px;
+}
+.modal-text {
+  color: var(--ink-soft);
+  font-weight: 700;
+  margin: 0 0 20px;
+  line-height: 1.4;
+}
+.modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 /* ---------- topbar ---------- */
 .topbar {
   display: flex;
@@ -282,9 +337,38 @@ button {
   position: relative;
   overflow: hidden;
 }
+.pet-avatar-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+}
 .pet-size-wrap {
   display: inline-block;
   transition: transform 0.5s cubic-bezier(.34,1.56,.64,1);
+}
+.baby-avatar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 12px;
+  animation: float 2.6s ease-in-out infinite;
+  animation-delay: 0.4s;
+}
+.baby-avatar {
+  width: 62px;
+  height: 62px;
+  filter: drop-shadow(0 6px 8px rgba(100,150,200,0.25));
+}
+.baby-name-tag {
+  font-family: 'Baloo 2', cursive;
+  font-weight: 700;
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+  background: #fff;
+  padding: 1px 8px;
+  border-radius: 999px;
 }
 .pet-avatar-big {
   width: 150px;

@@ -74,8 +74,14 @@
   </header>
 
   <div class="pet-stage">
-    <div id="pet-size-wrap" class="pet-size-wrap">
-      <div id="pet-avatar-big" class="pet-avatar-big"></div>
+    <div class="pet-avatar-row">
+      <div id="pet-size-wrap" class="pet-size-wrap">
+        <div id="pet-avatar-big" class="pet-avatar-big"></div>
+      </div>
+      <div id="baby-avatar-wrap" class="baby-avatar-wrap" hidden>
+        <div id="baby-avatar" class="baby-avatar"></div>
+        <span id="baby-name-tag" class="baby-name-tag"></span>
+      </div>
     </div>
     <div id="pet-bubble" class="pet-speech-bubble">Hej! Redo för en pepp-dag? 💫</div>
     <div class="feed-buttons">
@@ -103,6 +109,19 @@
 <!-- toast / celebration layer -->
 <div id="toast-layer"></div>
 <div id="confetti-layer"></div>
+
+<!-- bebis-valet -->
+<div id="baby-choice-modal" class="modal-overlay" hidden>
+  <div class="modal-card">
+    <div class="modal-emoji">🍼✨</div>
+    <h2 class="modal-title">Bebisen är redo för nästa steg!</h2>
+    <p id="baby-choice-text" class="modal-text"></p>
+    <div class="modal-buttons">
+      <button id="baby-restart-btn" class="btn-primary">Börja om med bebisen 🍼</button>
+      <button id="baby-moveout-btn" class="btn-secondary">Låt bebisen flytta hemifrån 🏡</button>
+    </div>
+  </div>
+</div>
 
 <script src="app.js"></script>
 </body>

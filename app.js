@@ -4,7 +4,10 @@
    SASSIBRASS – kawaii uppgifts-app med haj & säl
    ========================================================= */
 
-const STORAGE_KEY = "sassibrass_state_v1";
+// Demoläge: öppna sidan med ?demo=1 i adressen för att visa upp appen utan
+// att det syns i den riktiga rapporten eller stjäl push-prenumerationen.
+const DEMO_MODE = new URLSearchParams(location.search).get("demo") === "1";
+const STORAGE_KEY = DEMO_MODE ? "sassibrass_demo_state_v1" : "sassibrass_state_v1";
 
 /* ---------------------------------------------------------
    Push-notiser (Cloudflare Worker)
@@ -35,6 +38,7 @@ async function getPushSubscription() {
 }
 
 async function enablePushNotifications() {
+  if (DEMO_MODE) return false;
   if (!("Notification" in window) || !("PushManager" in window)) {
     alert("Din webbläsare stödjer tyvärr inte push-notiser.");
     return false;
@@ -66,6 +70,7 @@ async function disablePushNotifications() {
 }
 
 function syncStateToWorker() {
+  if (DEMO_MODE) return;
   const allDoneToday = Object.keys(state.completedToday).length >= totalTasksToday();
   const tasks = [];
   TASK_SECTIONS.forEach((section) => {
@@ -622,6 +627,7 @@ function renderAll() {
   updateStatsUI();
   renderTaskSections();
   setBubble(greetingForNow().replace("!", `, ${state.petName || "vän"}!`));
+  document.getElementById("demo-badge").hidden = !DEMO_MODE;
 }
 
 /* ---------------------------------------------------------
@@ -782,6 +788,10 @@ function initAppEvents() {
   document.getElementById("love-btn").addEventListener("click", lovePet);
 
   document.getElementById("notif-btn").addEventListener("click", async () => {
+    if (DEMO_MODE) {
+      showToast("Notiser är avstängda i demoläget 🔕");
+      return;
+    }
     const btn = document.getElementById("notif-btn");
     const existing = await getPushSubscription();
     if (existing) {

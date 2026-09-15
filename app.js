@@ -333,6 +333,7 @@ function defaultState() {
     love: 2,
     hunger: 80,
     happiness: 80,
+    lastStatDecayAt: null,
     streak: 0,
     lastActiveDate: null,
     completedToday: {},
@@ -377,14 +378,33 @@ function handleDailyReset() {
       state.streak = 0;
     }
 
-    // djuret blir lite hungrigare/mindre glatt över natten
-    state.hunger = clamp(state.hunger - 25, 10, 100);
-    state.happiness = clamp(state.happiness - 15, 10, 100);
   }
 
   state.completedToday = {};
   state.rewardedToday = {};
   state.lastActiveDate = today;
+  saveState();
+}
+
+const HUNGER_DECAY_PER_HOUR = 4;
+const HAPPINESS_DECAY_PER_HOUR = 3;
+
+// Sänker hunger/humör i takt med hur länge sen hon senast hade appen öppen,
+// istället för en engångsminskning per dygn. Håller staplarna i synk med
+// "jag är hungrig"-notiserna, som redan resonerar kring verklig förfluten tid.
+function applyStatDecay() {
+  const now = new Date();
+  if (!state.lastStatDecayAt) {
+    state.lastStatDecayAt = now.toISOString();
+    saveState();
+    return;
+  }
+  const hoursElapsed = (now - new Date(state.lastStatDecayAt)) / (60 * 60 * 1000);
+  if (hoursElapsed < 0.1) return; // för kort tid för att vara värt att räkna
+
+  state.hunger = Math.round(clamp(state.hunger - hoursElapsed * HUNGER_DECAY_PER_HOUR, 10, 100));
+  state.happiness = Math.round(clamp(state.happiness - hoursElapsed * HAPPINESS_DECAY_PER_HOUR, 10, 100));
+  state.lastStatDecayAt = now.toISOString();
   saveState();
 }
 
@@ -823,6 +843,7 @@ function initAppEvents() {
    --------------------------------------------------------- */
 function init() {
   handleDailyReset();
+  applyStatDecay();
   initAppEvents();
   registerServiceWorker();
 

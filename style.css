@@ -282,6 +282,10 @@ button {
   position: relative;
   overflow: hidden;
 }
+.pet-size-wrap {
+  display: inline-block;
+  transition: transform 0.5s cubic-bezier(.34,1.56,.64,1);
+}
 .pet-avatar-big {
   width: 150px;
   height: 150px;

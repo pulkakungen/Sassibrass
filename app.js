@@ -454,20 +454,104 @@ function blushMarkup(cx1, cx2, cy) {
           <ellipse cx="${cx2}" cy="${cy}" rx="9" ry="5.5" fill="#ffb4c6" opacity="0.7"/>`;
 }
 
-function accessoryMarkup(level) {
-  if (level >= 6) {
-    return `<g transform="translate(70,26)">
-      <path d="M0 18 L6 2 L14 14 L20 -2 L26 14 L34 2 L40 18 Z" fill="#ffd93d" stroke="#e0a800" stroke-width="2" stroke-linejoin="round"/>
-      <circle cx="20" cy="4" r="3" fill="#ff6f9c"/>
-    </g>`;
-  }
-  if (level >= 3) {
-    return `<g transform="translate(122,40) rotate(15)">
+// Pynt låses upp var tredje nivå och blir kvar (senaste två syns samtidigt,
+// så det känns som en växande samling utan att bli rörigt).
+const ACCESSORY_TIERS = [
+  {
+    level: 3,
+    label: "Stjärnpannband",
+    markup: `<g transform="translate(122,40) rotate(15)">
       <path d="M0 0 L6 -14 L12 0 Z" fill="#ffd93d"/>
       <circle cx="6" cy="-16" r="3" fill="#ffe98a"/>
-    </g>`;
+    </g>`
+  },
+  {
+    level: 6,
+    label: "Krona",
+    markup: `<g transform="translate(70,26)">
+      <path d="M0 18 L6 2 L14 14 L20 -2 L26 14 L34 2 L40 18 Z" fill="#ffd93d" stroke="#e0a800" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="20" cy="4" r="3" fill="#ff6f9c"/>
+    </g>`
+  },
+  {
+    level: 9,
+    label: "Halsband",
+    markup: `<g>
+      <path d="M70 110 Q100 134 130 110" stroke="#ffd93d" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <circle cx="100" cy="130" r="6.5" fill="#ff6f9c" stroke="#fff" stroke-width="2"/>
+    </g>`
+  },
+  {
+    level: 12,
+    label: "Rosett",
+    markup: `<g transform="translate(145,38) rotate(-10)">
+      <path d="M0 0 Q-12 -8 -14 2 Q-12 10 0 4 Q12 10 14 2 Q12 -8 0 0 Z" fill="#ff9ecb" stroke="#ff6f9c" stroke-width="1.5"/>
+      <circle cx="0" cy="2" r="2.5" fill="#fff"/>
+    </g>`
+  },
+  {
+    level: 15,
+    label: "Handväska",
+    markup: `<g transform="translate(150,118)">
+      <path d="M-11 6 Q-11 -6 0 -6 Q11 -6 11 6 Z" fill="#c9a6f5" stroke="#a685e0" stroke-width="1.5"/>
+      <path d="M-6 -6 Q-6 -14 0 -14 Q6 -14 6 -6" stroke="#a685e0" stroke-width="2" fill="none"/>
+      <rect x="-4" y="0" width="8" height="4" rx="1.5" fill="#eee2ff"/>
+    </g>`
+  },
+  {
+    level: 18,
+    label: "Solglasögon",
+    markup: `<g transform="translate(102,78)">
+      <ellipse cx="-20" cy="0" rx="11" ry="9" fill="#4a3f5c"/>
+      <ellipse cx="20" cy="0" rx="11" ry="9" fill="#4a3f5c"/>
+      <path d="M-9 -2 Q0 -9 9 -2" stroke="#4a3f5c" stroke-width="3" fill="none"/>
+      <ellipse cx="-23" cy="-3" rx="3" ry="2" fill="#fff" opacity="0.5"/>
+      <ellipse cx="17" cy="-3" rx="3" ry="2" fill="#fff" opacity="0.5"/>
+    </g>`
+  },
+  {
+    level: 21,
+    label: "Gosedjur",
+    markup: `<g transform="translate(35,128)">
+      <circle cx="0" cy="6" r="9" fill="#e0b98a"/>
+      <circle cx="-7" cy="-2" r="4" fill="#e0b98a"/>
+      <circle cx="7" cy="-2" r="4" fill="#e0b98a"/>
+      <circle cx="0" cy="16" r="7" fill="#e0b98a"/>
+      <circle cx="-3" cy="5" r="1.2" fill="#3a2e45"/>
+      <circle cx="3" cy="5" r="1.2" fill="#3a2e45"/>
+      <path d="M-2 9 Q0 11 2 9" stroke="#3a2e45" stroke-width="1" fill="none" stroke-linecap="round"/>
+    </g>`
+  },
+  {
+    level: 24,
+    label: "Kudde",
+    markup: `<g transform="translate(148,140)">
+      <rect x="-16" y="-8" width="32" height="20" rx="7" fill="#ffe0ea" stroke="#ff9ecb" stroke-width="1.5"/>
+      <path d="M-9 -3 L9 -3 M-9 3 L9 3" stroke="#ff9ecb" stroke-width="1.2" stroke-linecap="round"/>
+    </g>`
+  },
+  {
+    level: 27,
+    label: "Glitter",
+    markup: `<g fill="#ffe98a">
+      <path d="M50 30 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 Z"/>
+      <path d="M154 26 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5 Z"/>
+      <path d="M168 58 l1.5 4 4 1.5 -4 1.5 -1.5 4 -1.5 -4 -4 -1.5 4 -1.5 Z"/>
+    </g>`
   }
-  return "";
+];
+
+function accessoryMarkup(level) {
+  const earned = ACCESSORY_TIERS.filter((t) => level >= t.level);
+  // visa bara de två senast upplåsta, annars blir det för rörigt på en liten yta
+  return earned.slice(-2).map((t) => t.markup).join("");
+}
+
+function petSizeScale(level) {
+  if (level >= 30) return 1.45;
+  if (level >= 20) return 1.3;
+  if (level >= 10) return 1.15;
+  return 1;
 }
 
 function renderSharkSVG(mood, level) {
@@ -513,6 +597,9 @@ function updatePetAvatars(mood) {
   const big = document.getElementById("pet-avatar-big");
   if (mini) mini.innerHTML = svg;
   if (big) big.innerHTML = svg;
+
+  const sizeWrap = document.getElementById("pet-size-wrap");
+  if (sizeWrap) sizeWrap.style.transform = `scale(${petSizeScale(state.level)})`;
 }
 
 function flashMood(mood, duration = 1400) {
@@ -673,6 +760,7 @@ function completeTask(taskId, sectionId) {
     state.love = clamp(state.love + LOVE_PER_TASK, 0, MAX_LOVE);
     state.totalCompleted += 1;
 
+    const levelBefore = state.level;
     let leveledUp = false;
     while (state.xp >= xpToNext(state.level)) {
       state.xp -= xpToNext(state.level);
@@ -691,6 +779,23 @@ function completeTask(taskId, sectionId) {
         showToast(pick(LEVEL_UP_MESSAGES), true);
         burstConfetti(30);
       }, 350);
+
+      const newAccessory = ACCESSORY_TIERS.find((t) => t.level > levelBefore && t.level <= state.level);
+      const newSizeTier = [10, 20, 30].find((l) => l > levelBefore && l <= state.level);
+      let extraDelay = 900;
+      if (newAccessory) {
+        setTimeout(() => {
+          showToast(`Nytt pynt upplåst: ${newAccessory.label}! ✨`, true);
+          burstConfetti(24);
+        }, extraDelay);
+        extraDelay += 550;
+      }
+      if (newSizeTier) {
+        setTimeout(() => {
+          showToast("Djuret har växt sig större! 🌟🦈", true);
+          burstConfetti(24);
+        }, extraDelay);
+      }
     }
 
     const section = TASK_SECTIONS.find((s) => s.id === sectionId);

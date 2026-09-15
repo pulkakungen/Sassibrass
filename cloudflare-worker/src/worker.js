@@ -174,6 +174,14 @@ function json(data, status = 200) {
   });
 }
 
+async function mergeHistoryRecord(env, dateStr, patch) {
+  const raw = await env.PUSH_KV.get(HISTORY_PREFIX + dateStr);
+  const existing = raw ? JSON.parse(raw) : {};
+  const merged = { ...existing, ...patch };
+  await env.PUSH_KV.put(HISTORY_PREFIX + dateStr, JSON.stringify(merged));
+  return merged;
+}
+
 async function sendPush(env, message) {
   const subRaw = await env.PUSH_KV.get(SUBSCRIPTION_KEY);
   if (!subRaw) return false;
@@ -218,9 +226,13 @@ async function handleScheduled(env) {
     const slotStart = reminder.hour * 60 + reminder.minute;
     const withinWindow = minutesOfDay >= slotStart && minutesOfDay < slotStart + 15;
     if (withinWindow && !sent.includes(reminder.id)) {
-      await sendPush(env, pick(reminder.messages));
+      const message = pick(reminder.messages);
+      await sendPush(env, message);
       sent.push(reminder.id);
       await env.PUSH_KV.put(sentKey, JSON.stringify(sent), { expirationTtl: 60 * 60 * 48 });
+      if (reminder.id === "affirmation") {
+        await mergeHistoryRecord(env, dateStr, { affirmationSent: message });
+      }
     }
   }
 
@@ -278,7 +290,7 @@ async function buildReportCsv(env) {
   const dates = Object.keys(records).sort();
   const weekdayNames = ["söndag", "måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag"];
 
-  const header = ["Datum", "Veckodag", ...REPORT_COLUMNS.map((c) => c.label), "Allt klart den dagen"];
+  const header = ["Datum", "Veckodag", ...REPORT_COLUMNS.map((c) => c.label), "Allt klart den dagen", "Veckans affirmation"];
   const rows = [header];
 
   for (const dateStr of dates) {
@@ -291,6 +303,7 @@ async function buildReportCsv(env) {
       row.push(t ? (t.done ? "Ja" : "Nej") : "–");
     }
     row.push(record.allDoneToday ? "Ja" : "Nej");
+    row.push(record.affirmationSent ? record.affirmationSent.replace(/^🌟 Veckans affirmation: /, "") : "");
     rows.push(row);
   }
 
@@ -341,14 +354,11 @@ export default {
       }
       await env.PUSH_KV.put(STATE_KEY, JSON.stringify(state));
 
-      await env.PUSH_KV.put(
-        HISTORY_PREFIX + dateStr,
-        JSON.stringify({
-          tasks: Array.isArray(body.tasks) ? body.tasks : [],
-          allDoneToday: !!body.allDoneToday,
-          updatedAt: new Date().toISOString()
-        })
-      );
+      await mergeHistoryRecord(env, dateStr, {
+        tasks: Array.isArray(body.tasks) ? body.tasks : [],
+        allDoneToday: !!body.allDoneToday,
+        updatedAt: new Date().toISOString()
+      });
 
       return json({ ok: true });
     }

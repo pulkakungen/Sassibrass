@@ -9,6 +9,7 @@ const CORS_HEADERS = {
 const SUBSCRIPTION_KEY = "subscription";
 const STATE_KEY = "state";
 const HISTORY_PREFIX = "history:";
+const CURRENT_AFFIRMATION_KEY = "current_affirmation";
 
 // Speglar uppgiftslistan i app.js, i samma ordning, så rapporten alltid
 // får samma kolumnordning oavsett vilka uppgifter som var aktiva en viss dag.
@@ -167,6 +168,29 @@ function stockholmParts(date) {
   };
 }
 
+// Nyckel som är identisk måndag-söndag och byts exakt på måndagar.
+function mondayKeyFor(date) {
+  const { dateStr } = stockholmParts(date);
+  const d = new Date(dateStr + "T12:00:00Z");
+  const day = d.getUTCDay(); // 0=söndag ... 6=lördag
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  d.setUTCDate(d.getUTCDate() + diffToMonday);
+  return d.toISOString().slice(0, 10);
+}
+
+// Samma affirmation hela veckan (måndag-söndag), ny slumpad varje måndag.
+async function getWeeklyAffirmation(env, now) {
+  const weekKey = mondayKeyFor(now);
+  const raw = await env.PUSH_KV.get(CURRENT_AFFIRMATION_KEY);
+  const stored = raw ? JSON.parse(raw) : null;
+  if (stored && stored.weekKey === weekKey) return stored.text;
+
+  const affirmationReminder = FIXED_REMINDERS.find((r) => r.id === "affirmation");
+  const text = pick(affirmationReminder.messages);
+  await env.PUSH_KV.put(CURRENT_AFFIRMATION_KEY, JSON.stringify({ weekKey, text }));
+  return text;
+}
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -244,7 +268,7 @@ async function runScheduledChecks(env) {
     const slotStart = reminder.hour * 60 + reminder.minute;
     const withinWindow = minutesOfDay >= slotStart && minutesOfDay < slotStart + 15;
     if (withinWindow && !sent.includes(reminder.id)) {
-      const message = pick(reminder.messages);
+      const message = reminder.id === "affirmation" ? await getWeeklyAffirmation(env, now) : pick(reminder.messages);
       const delivered = await sendPush(env, message);
       if (delivered) {
         sent.push(reminder.id);
@@ -437,8 +461,7 @@ export default {
     }
 
     if (url.pathname === "/admin/send-affirmation" && request.method === "GET") {
-      const affirmationReminder = FIXED_REMINDERS.find((r) => r.id === "affirmation");
-      const message = pick(affirmationReminder.messages);
+      const message = await getWeeklyAffirmation(env, new Date());
       const ok = await sendPush(env, message);
       if (ok) {
         const { dateStr } = stockholmParts(new Date());
@@ -448,6 +471,22 @@ export default {
         ok ? `Skickad! 🌟\n\n${message}` : "Misslyckades, troligen finns ingen aktiv prenumeration just nu (klockan 🔔 inte påslagen).",
         { headers: CORS_HEADERS }
       );
+    }
+
+    if (url.pathname === "/admin/set-affirmation" && request.method === "GET") {
+      const text = url.searchParams.get("text");
+      if (!text) {
+        return new Response("Lägg till ?text=... i webbadressen med affirmationen du vill låsa för veckan.", {
+          status: 400,
+          headers: CORS_HEADERS
+        });
+      }
+      const full = text.startsWith("🌟") ? text : `🌟 Veckans affirmation: ${text}`;
+      const weekKey = mondayKeyFor(new Date());
+      await env.PUSH_KV.put(CURRENT_AFFIRMATION_KEY, JSON.stringify({ weekKey, text: full }));
+      return new Response(`Veckans affirmation är nu låst till (gäller till nästa måndag):\n\n${full}`, {
+        headers: CORS_HEADERS
+      });
     }
 
     if (url.pathname === "/" || url.pathname === "") {

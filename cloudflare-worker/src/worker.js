@@ -436,6 +436,20 @@ export default {
       );
     }
 
+    if (url.pathname === "/admin/send-affirmation" && request.method === "GET") {
+      const affirmationReminder = FIXED_REMINDERS.find((r) => r.id === "affirmation");
+      const message = pick(affirmationReminder.messages);
+      const ok = await sendPush(env, message);
+      if (ok) {
+        const { dateStr } = stockholmParts(new Date());
+        await mergeHistoryRecord(env, dateStr, { affirmationSent: message });
+      }
+      return new Response(
+        ok ? `Skickad! 🌟\n\n${message}` : "Misslyckades, troligen finns ingen aktiv prenumeration just nu (klockan 🔔 inte påslagen).",
+        { headers: CORS_HEADERS }
+      );
+    }
+
     if (url.pathname === "/" || url.pathname === "") {
       return new Response("Sassibrass push worker is running 🦈", { headers: CORS_HEADERS });
     }

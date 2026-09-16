@@ -245,11 +245,13 @@ async function runScheduledChecks(env) {
     const withinWindow = minutesOfDay >= slotStart && minutesOfDay < slotStart + 15;
     if (withinWindow && !sent.includes(reminder.id)) {
       const message = pick(reminder.messages);
-      await sendPush(env, message);
-      sent.push(reminder.id);
-      await env.PUSH_KV.put(sentKey, JSON.stringify(sent), { expirationTtl: 60 * 60 * 48 });
-      if (reminder.id === "affirmation") {
-        await mergeHistoryRecord(env, dateStr, { affirmationSent: message });
+      const delivered = await sendPush(env, message);
+      if (delivered) {
+        sent.push(reminder.id);
+        await env.PUSH_KV.put(sentKey, JSON.stringify(sent), { expirationTtl: 60 * 60 * 48 });
+        if (reminder.id === "affirmation") {
+          await mergeHistoryRecord(env, dateStr, { affirmationSent: message });
+        }
       }
     }
   }
@@ -260,9 +262,11 @@ async function runScheduledChecks(env) {
     const reminderStart = schoolBlock[1] - 30;
     const withinSchoolEndWindow = minutesOfDay >= reminderStart && minutesOfDay < reminderStart + 15;
     if (withinSchoolEndWindow && !sent.includes("skoldagslut")) {
-      await sendPush(env, SCHOOL_END_MESSAGE);
-      sent.push("skoldagslut");
-      await env.PUSH_KV.put(sentKey, JSON.stringify(sent), { expirationTtl: 60 * 60 * 48 });
+      const delivered = await sendPush(env, SCHOOL_END_MESSAGE);
+      if (delivered) {
+        sent.push("skoldagslut");
+        await env.PUSH_KV.put(sentKey, JSON.stringify(sent), { expirationTtl: 60 * 60 * 48 });
+      }
     }
   }
 

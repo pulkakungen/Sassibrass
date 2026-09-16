@@ -452,6 +452,14 @@ export default {
       return new Response(lines.join("\n"), { headers: { ...CORS_HEADERS, "Content-Type": "text/plain; charset=utf-8" } });
     }
 
+    if (url.pathname === "/admin/send-mamma-hej" && request.method === "GET") {
+      const ok = await sendPush(env, "Ha en fin dag i skolan. Jag älskar dig ❤️ / mamma");
+      return new Response(
+        ok ? "Skickad! 💕" : "Misslyckades, troligen finns ingen aktiv prenumeration just nu (klockan 🔔 inte påslagen).",
+        { headers: CORS_HEADERS }
+      );
+    }
+
     if (url.pathname === "/admin/send-test" && request.method === "GET") {
       const ok = await sendPush(env, "Testnotis från Sassibrass! Om du ser den här funkar allt precis som det ska 🦈✅");
       return new Response(

@@ -58,7 +58,10 @@ const REPORT_COLUMNS = [
 
 const AWAKE_START_MIN = 8 * 60; // 08:00
 const AWAKE_END_MIN = 21 * 60 + 30; // 21:30
-const NAG_GAP_MS = 4 * 60 * 60 * 1000; // 4 timmar utan aktivitet innan djuret säger till
+const NAG_GAP_MS = 4 * 60 * 60 * 1000; // minsta tid mellan två "jag är hungrig"-nag
+const HUNGER_DECAY_PER_HOUR = 6; // speglar samma takt som i app.js, för att uppskatta aktuell hungernivå
+const HAPPINESS_DECAY_PER_HOUR = 3; // speglar samma takt som i app.js
+const NAG_THRESHOLD = 50; // nagga bara när mat- eller kärleksnivån faktiskt är under halva
 
 // Mobilfritt i skolan - "jag är hungrig"-naggandet ska aldrig skickas då,
 // hon kan ju inte göra något åt det förrän hon får mobilen tillbaka.
@@ -305,11 +308,17 @@ async function runScheduledChecks(env) {
   if (state.lastSyncDateStr === dateStr && state.allDoneToday) return; // klar för dagen, inget tjat
 
   const lastActivityMs = new Date(state.lastSyncAt).getTime();
-  const gapSinceActivity = now.getTime() - lastActivityMs;
+  const hoursSinceActivity = (now.getTime() - lastActivityMs) / (60 * 60 * 1000);
+  const lastKnownHunger = typeof state.hunger === "number" ? state.hunger : 80;
+  const lastKnownHappiness = typeof state.happiness === "number" ? state.happiness : 80;
+  const estimatedHunger = Math.max(10, lastKnownHunger - hoursSinceActivity * HUNGER_DECAY_PER_HOUR);
+  const estimatedHappiness = Math.max(10, lastKnownHappiness - hoursSinceActivity * HAPPINESS_DECAY_PER_HOUR);
+
   const lastNagMs = state.lastNagAt ? new Date(state.lastNagAt).getTime() : 0;
   const gapSinceNag = now.getTime() - lastNagMs;
 
-  if (gapSinceActivity > NAG_GAP_MS && gapSinceNag > NAG_GAP_MS) {
+  const isHungryOrLonely = estimatedHunger < NAG_THRESHOLD || estimatedHappiness < NAG_THRESHOLD;
+  if (isHungryOrLonely && gapSinceNag > NAG_GAP_MS) {
     await sendPush(env, pick(NAG_MESSAGES));
     state.lastNagAt = now.toISOString();
     await env.PUSH_KV.put(STATE_KEY, JSON.stringify(state));
@@ -390,6 +399,8 @@ export default {
         lastSyncAt: new Date().toISOString(),
         lastSyncDateStr: dateStr,
         allDoneToday: !!body.allDoneToday,
+        hunger: typeof body.hunger === "number" ? body.hunger : 80,
+        happiness: typeof body.happiness === "number" ? body.happiness : 80,
         lastNagAt: null
       };
       // behåll lastNagAt om det redan finns, så vi inte nollställer tjat-spärren vid varje synk

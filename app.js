@@ -81,7 +81,7 @@ function syncStateToWorker() {
   fetch(PUSH_WORKER_URL + "/sync", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ allDoneToday, tasks })
+    body: JSON.stringify({ allDoneToday, tasks, hunger: state.hunger, happiness: state.happiness })
   }).catch(() => {});
 }
 
@@ -389,7 +389,7 @@ function handleDailyReset() {
   saveState();
 }
 
-const HUNGER_DECAY_PER_HOUR = 4;
+const HUNGER_DECAY_PER_HOUR = 6;
 const HAPPINESS_DECAY_PER_HOUR = 3;
 
 // Sänker hunger/humör i takt med hur länge sen hon senast hade appen öppen,

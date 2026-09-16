@@ -185,32 +185,50 @@ async function mergeHistoryRecord(env, dateStr, patch) {
 async function sendPush(env, message) {
   const subRaw = await env.PUSH_KV.get(SUBSCRIPTION_KEY);
   if (!subRaw) return false;
-  const subscription = JSON.parse(subRaw);
 
-  const vapid = {
-    subject: env.VAPID_SUBJECT,
-    publicKey: env.VAPID_PUBLIC_KEY,
-    privateKey: env.VAPID_PRIVATE_KEY
-  };
+  try {
+    const subscription = JSON.parse(subRaw);
+    const vapid = {
+      subject: env.VAPID_SUBJECT,
+      publicKey: env.VAPID_PUBLIC_KEY,
+      privateKey: env.VAPID_PRIVATE_KEY
+    };
 
-  const payload = await buildPushPayload(
-    { data: JSON.stringify({ title: "Sassibrass", body: message }), options: { ttl: 3600 } },
-    subscription,
-    vapid
-  );
+    const payload = await buildPushPayload(
+      { data: JSON.stringify({ title: "Sassibrass", body: message }), options: { ttl: 3600 } },
+      subscription,
+      vapid
+    );
 
-  const res = await fetch(subscription.endpoint, payload);
-  if (res.status === 404 || res.status === 410) {
-    // prenumerationen är ogiltig, ta bort den
-    await env.PUSH_KV.delete(SUBSCRIPTION_KEY);
+    const res = await fetch(subscription.endpoint, payload);
+    if (res.status === 404 || res.status === 410) {
+      // prenumerationen är ogiltig, ta bort den
+      await env.PUSH_KV.delete(SUBSCRIPTION_KEY);
+    }
+    if (!res.ok) {
+      console.error("sendPush misslyckades", res.status, await res.text().catch(() => ""));
+    }
+    return res.ok;
+  } catch (err) {
+    // en trasig prenumeration eller VAPID-miss ska aldrig krascha hela schemat
+    console.error("sendPush kastade fel", err && err.message);
+    return false;
   }
-  return res.ok;
 }
 
 const SCHOOL_END_MESSAGE =
   "Snart slut för idag! Glöm inte packa med dig böckerna hem, och kolla vad som står på listan 📚🎒";
 
 async function handleScheduled(env) {
+  try {
+    await runScheduledChecks(env);
+  } catch (err) {
+    // ett enskilt fel ska aldrig tysta hela cron-körningen utan spår
+    console.error("handleScheduled kastade fel", err && err.stack);
+  }
+}
+
+async function runScheduledChecks(env) {
   const now = new Date();
   const { dateStr, minutesOfDay, weekday } = stockholmParts(now);
 
@@ -379,6 +397,39 @@ export default {
         cursor = page.list_complete ? undefined : page.cursor;
       } while (cursor);
       return new Response(`Rensade ${cleared} dagar med historik. Klart! 🧹`, { headers: CORS_HEADERS });
+    }
+
+    if (url.pathname === "/admin/status" && request.method === "GET") {
+      const subRaw = await env.PUSH_KV.get(SUBSCRIPTION_KEY);
+      const stateRaw = await env.PUSH_KV.get(STATE_KEY);
+      const { dateStr, minutesOfDay, weekday } = stockholmParts(new Date());
+      const todayKey = `reminders:${dateStr}`;
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const yesterdayKey = `reminders:${stockholmParts(yesterday).dateStr}`;
+      const sentToday = await env.PUSH_KV.get(todayKey);
+      const sentYesterday = await env.PUSH_KV.get(yesterdayKey);
+
+      const lines = [
+        "=== Sassibrass push-status ===",
+        "",
+        `Push-prenumeration finns: ${subRaw ? "JA ✅" : "NEJ ❌ (klockan 🔔 är inte aktiverad på någon enhet just nu)"}`,
+        "",
+        `Workerns nuvarande tid (svensk lokaltid): ${String(Math.floor(minutesOfDay / 60)).padStart(2, "0")}:${String(minutesOfDay % 60).padStart(2, "0")}, veckodag ${weekday}`,
+        "",
+        `Notiser skickade idag (${dateStr}): ${sentToday || "inga än"}`,
+        `Notiser skickade igår: ${sentYesterday || "inga"}`,
+        "",
+        `Sync-status (app-aktivitet): ${stateRaw || "appen har aldrig synkat"}`
+      ];
+      return new Response(lines.join("\n"), { headers: { ...CORS_HEADERS, "Content-Type": "text/plain; charset=utf-8" } });
+    }
+
+    if (url.pathname === "/admin/send-test" && request.method === "GET") {
+      const ok = await sendPush(env, "Testnotis från Sassibrass! Om du ser den här funkar allt precis som det ska 🦈✅");
+      return new Response(
+        ok ? "Skickad! Kolla telefonen. 📬" : "Misslyckades, troligen finns ingen aktiv prenumeration just nu (klockan 🔔 inte påslagen).",
+        { headers: CORS_HEADERS }
+      );
     }
 
     if (url.pathname === "/" || url.pathname === "") {

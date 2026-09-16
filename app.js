@@ -133,11 +133,46 @@ const TASK_SECTIONS = [
     emoji: "🏠",
     title: "Hemma efter skolan",
     tasks: [
-      { id: "matsopor", emoji: "🍂", text: "Gå ut med matsopor", days: [DAG_MAN, DAG_ONS, DAG_FRE, DAG_LOR, DAG_SON] },
-      { id: "plastsopor", emoji: "♻️", text: "Gå ut med plastsopor", days: [DAG_TIS, DAG_TORS, DAG_SON] },
-      { id: "metallglas", emoji: "🍾", text: "Gå ut med metall- och glassopor", days: [DAG_SON] },
-      { id: "papperkartong", emoji: "📦", text: "Gå ut med papper och kartong", days: [DAG_SON] },
-      { id: "restavfall", emoji: "🗑️", text: "Gå ut med restavfall", days: [DAG_SON] },
+      {
+        id: "matsopor",
+        emoji: "🍂",
+        text: "Gå ut med matsopor",
+        schedule: [
+          { day: DAG_MAN, weekParity: "even" },
+          { day: DAG_ONS, weekParity: "odd" },
+          { day: DAG_FRE },
+          { day: DAG_LOR, weekParity: "odd" },
+          { day: DAG_SON }
+        ]
+      },
+      {
+        id: "plastsopor",
+        emoji: "♻️",
+        text: "Gå ut med plastsopor",
+        schedule: [
+          { day: DAG_TIS, weekParity: "even" },
+          { day: DAG_TORS, weekParity: "odd" },
+          { day: DAG_SON }
+        ]
+      },
+      {
+        id: "metallglas",
+        emoji: "🍾",
+        text: "Gå ut med metall- och glassopor",
+        schedule: [{ day: DAG_SON, weekParity: "odd" }]
+      },
+      {
+        id: "papperkartong",
+        emoji: "📦",
+        text: "Gå ut med papper och kartong",
+        schedule: [{ day: DAG_SON, weekParity: "odd" }]
+      },
+      {
+        id: "restavfall",
+        emoji: "🗑️",
+        text: "Gå ut med restavfall",
+        schedule: [{ day: DAG_SON, weekParity: "odd" }]
+      },
       { id: "mellanmal", emoji: "🍎", text: "Ät ett mellanmål" },
       { id: "tvatten", emoji: "🧺", text: "Gå ner med tvätten", days: [DAG_MAN, DAG_TORS] },
       { id: "snygga-rum", emoji: "🧹", text: "Snygga upp rummet" },
@@ -191,8 +226,29 @@ function dayOfYear(date) {
   return Math.floor((date - start) / 86400000) + 1;
 }
 
+// Vanligt svenskt veckonummer (ISO 8601, vecka 1 är den med årets första torsdag).
+function isoWeekNumber(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7; // måndag=1 ... söndag=7
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+function weekParityMatches(weekParity, date) {
+  if (!weekParity) return true;
+  const isEvenWeek = isoWeekNumber(date) % 2 === 0;
+  return weekParity === "even" ? isEvenWeek : !isEvenWeek;
+}
+
 // task.days: begränsar till vissa veckodagar. task.parity: "even"/"odd" ger "varannan dag"-uppgifter.
+// task.schedule: lista med {day, weekParity} för uppgifter som varierar per dag OCH jämn/udda vecka
+// (t.ex. sopsortering), används istället för days/parity när den finns.
 function isTaskActiveOnDate(task, date) {
+  if (task.schedule) {
+    const today = date.getDay();
+    return task.schedule.some((rule) => rule.day === today && weekParityMatches(rule.weekParity, date));
+  }
   if (task.days && !task.days.includes(date.getDay())) return false;
   if (task.parity) {
     const isEven = dayOfYear(date) % 2 === 0;

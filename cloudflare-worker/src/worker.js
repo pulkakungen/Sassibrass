@@ -1,4 +1,5 @@
 import { buildPushPayload } from "@block65/webcrypto-web-push";
+import { handlePanelRequest, mergeSyncedTasks } from "./panel.js";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -214,7 +215,7 @@ function denied() {
 
 // Normaliserad lägesbild för föräldrapanelen. Samma form i alla appar, så
 // panelen slipper veta hur varje enskild app är byggd inuti.
-async function buildSummary(env) {
+async function buildSummary(env, url, request) {
   const now = new Date();
   const { dateStr } = stockholmParts(now);
   const subRaw = await env.PUSH_KV.get(SUBSCRIPTION_KEY);
@@ -239,16 +240,26 @@ async function buildSummary(env) {
     });
   }
 
+  // Länkar så att föräldrapanelen kan lägga en knapp rakt in i kortet.
+  const key = (url ? url.searchParams.get("key") : null) || (request ? request.headers.get("X-Admin-Key") : null);
+  const lank = (path) => (url ? url.origin + path + (key ? "?key=" + encodeURIComponent(key) : "") : null);
+
   return {
     app: "sassibrass",
     title: "Sassibrass",
     child: "Sassa",
+    panelUrl: lank("/panel"),
+    links: [
+      { label: "Panel", url: lank("/panel") },
+      { label: "Status", url: lank("/admin/status") },
+      { label: "Rapport", url: lank("/report") }
+    ],
     now: now.toISOString(),
     dateStr,
     notifications: !!subRaw,
     lastSyncAt: state ? state.lastSyncAt : null,
     lastNagAt: state ? state.lastNagAt : null,
-    allDoneToday: !!(state && state.allDoneToday),
+    allDoneToday: tasks.length > 0 ? tasks.every((t) => t.done) : !!(state && state.allDoneToday),
     hunger: state && typeof state.hunger === "number" ? state.hunger : null,
     happiness: state && typeof state.happiness === "number" ? state.happiness : null,
     level: state && typeof state.level === "number" ? state.level : null,
@@ -488,14 +499,26 @@ export default {
       }
       await env.PUSH_KV.put(STATE_KEY, JSON.stringify(state));
 
+      const tidigareRaw = await env.PUSH_KV.get(HISTORY_PREFIX + dateStr);
+      const tidigare = tidigareRaw ? JSON.parse(tidigareRaw) : {};
+      const tasks = mergeSyncedTasks(tidigare, Array.isArray(body.tasks) ? body.tasks : []);
+
       await mergeHistoryRecord(env, dateStr, {
-        tasks: Array.isArray(body.tasks) ? body.tasks : [],
-        allDoneToday: !!body.allDoneToday,
+        tasks,
+        allDoneToday: tasks.length > 0 && tasks.every((t) => t.done),
         updatedAt: new Date().toISOString()
       });
 
       return json({ ok: true });
     }
+
+    const panelRes = await handlePanelRequest(request, env, url, {
+      title: "Sassibrass 🦈",
+      historyPrefix: HISTORY_PREFIX,
+      authorized: adminKeyOk,
+      corsHeaders: CORS_HEADERS
+    });
+    if (panelRes) return panelRes;
 
     if (url.pathname.startsWith("/admin") || url.pathname === "/report") {
       if (!adminKeyOk(request, url, env)) return denied();
@@ -506,7 +529,7 @@ export default {
     }
 
     if (url.pathname === "/admin/summary" && request.method === "GET") {
-      return json(await buildSummary(env));
+      return json(await buildSummary(env, url, request));
     }
 
     // Fritt meddelande från föräldrapanelen.

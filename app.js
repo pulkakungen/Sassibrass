@@ -468,51 +468,8 @@ function applyStatDecay() {
 }
 
 /* ---------------------------------------------------------
-   Pet SVG-generering (kawaii-stil)
+   Pet-figurer (klistermärken) och pynt
    --------------------------------------------------------- */
-function eyesMarkup(mood, cx1, cx2, cy) {
-  if (mood === "love") {
-    const heart = (cx) => `
-      <path d="M${cx} ${cy + 6} C${cx - 8} ${cy - 4}, ${cx - 2} ${cy - 12}, ${cx} ${cy - 6}
-               C${cx + 2} ${cy - 12}, ${cx + 8} ${cy - 4}, ${cx} ${cy + 6} Z" fill="#ff6f9c"/>`;
-    return heart(cx1) + heart(cx2);
-  }
-  if (mood === "sad") {
-    return `
-      <circle cx="${cx1}" cy="${cy}" r="7" fill="#3a2e45"/>
-      <circle cx="${cx2}" cy="${cy}" r="7" fill="#3a2e45"/>
-      <path d="M${cx1 - 6} ${cy - 10} q6 -6 12 0" stroke="#3a2e45" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      <path d="M${cx2 - 6} ${cy - 10} q6 -6 12 0" stroke="#3a2e45" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      <circle cx="${cx1 + 3}" cy="${cy + 10}" r="2.5" fill="#bfe4ff"/>
-    `;
-  }
-  // happy / yum / default – stora glittriga ögon
-  return `
-    <circle cx="${cx1}" cy="${cy}" r="9" fill="#3a2e45"/>
-    <circle cx="${cx2}" cy="${cy}" r="9" fill="#3a2e45"/>
-    <circle cx="${cx1 - 3}" cy="${cy - 3}" r="2.6" fill="#fff"/>
-    <circle cx="${cx2 - 3}" cy="${cy - 3}" r="2.6" fill="#fff"/>
-    <circle cx="${cx1 + 2.5}" cy="${cy + 2.5}" r="1.4" fill="#fff" opacity="0.8"/>
-    <circle cx="${cx2 + 2.5}" cy="${cy + 2.5}" r="1.4" fill="#fff" opacity="0.8"/>
-  `;
-}
-
-function mouthMarkup(mood, cx, cy) {
-  if (mood === "yum") {
-    return `<ellipse cx="${cx}" cy="${cy}" rx="7" ry="9" fill="#a5445c"/>
-            <ellipse cx="${cx}" cy="${cy + 4}" rx="4" ry="3" fill="#ff8fa8"/>`;
-  }
-  if (mood === "sad") {
-    return `<path d="M${cx - 10} ${cy + 6} q10 -10 20 0" stroke="#3a2e45" stroke-width="3" fill="none" stroke-linecap="round"/>`;
-  }
-  return `<path d="M${cx - 12} ${cy - 4} q12 14 24 0" stroke="#3a2e45" stroke-width="3" fill="none" stroke-linecap="round"/>`;
-}
-
-function blushMarkup(cx1, cx2, cy) {
-  return `<ellipse cx="${cx1}" cy="${cy}" rx="9" ry="5.5" fill="#ffb4c6" opacity="0.7"/>
-          <ellipse cx="${cx2}" cy="${cy}" rx="9" ry="5.5" fill="#ffb4c6" opacity="0.7"/>`;
-}
-
 // Pynt låses upp var tredje nivå och blir kvar (senaste två syns samtidigt,
 // så det känns som en växande samling utan att bli rörigt).
 const ACCESSORY_TIERS = [
@@ -613,37 +570,6 @@ function petSizeScale(level) {
   return 1;
 }
 
-function renderSharkSVG(mood, level) {
-  return `
-  <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="100" cy="150" rx="55" ry="10" fill="#000" opacity="0.06"/>
-    <path d="M60 60 Q100 20 150 55 Q170 65 165 95 Q160 130 110 140 Q60 148 45 110 Q35 80 60 60 Z" fill="#8fd8f7"/>
-    <path d="M65 105 Q100 135 145 100 Q140 130 100 138 Q65 132 65 105 Z" fill="#eaf9ff"/>
-    <path d="M105 25 Q118 5 132 22 Q120 32 108 34 Z" fill="#8fd8f7"/>
-    <path d="M158 70 Q182 62 188 78 Q178 88 160 86 Z" fill="#8fd8f7"/>
-    ${blushMarkup(78, 128, 92)}
-    ${eyesMarkup(mood, 82, 122, 75)}
-    ${mouthMarkup(mood, 102, 96)}
-    ${accessoryMarkup(level)}
-  </svg>`;
-}
-
-function renderSealSVG(mood, level) {
-  return `
-  <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="100" cy="150" rx="55" ry="10" fill="#000" opacity="0.06"/>
-    <ellipse cx="100" cy="95" rx="62" ry="58" fill="#c9d6e3"/>
-    <ellipse cx="100" cy="112" rx="38" ry="30" fill="#eef3f8"/>
-    <ellipse cx="45" cy="120" rx="16" ry="9" fill="#c9d6e3" transform="rotate(-25 45 120)"/>
-    <ellipse cx="155" cy="120" rx="16" ry="9" fill="#c9d6e3" transform="rotate(25 155 120)"/>
-    ${blushMarkup(72, 128, 100)}
-    ${eyesMarkup(mood, 82, 122, 82)}
-    ${mouthMarkup(mood, 102, 104)}
-    <path d="M70 100 L45 96 M70 104 L43 106 M130 100 L155 96 M130 104 L157 106" stroke="#b0a89f" stroke-width="1.5" stroke-linecap="round"/>
-    ${accessoryMarkup(level)}
-  </svg>`;
-}
-
 const SEAL_STICKERS = {
   love: "icons/seal/love.png",
   yum: "icons/seal/yum.png",
@@ -666,7 +592,14 @@ const SEAL_STICKERS = {
   ]
 };
 
-const SEAL_ACCESSORY_EMOJI = {
+const SHARK_STICKERS = {
+  love: "icons/shark/love.png",
+  yum: "icons/shark/yum.png",
+  sad: "icons/shark/sad.png",
+  happyPool: Array.from({ length: 25 }, (_, i) => `icons/shark/happy-${i + 1}.png`)
+};
+
+const ACCESSORY_EMOJI = {
   Stjärnpannband: "⭐",
   Krona: "👑",
   Halsband: "📿",
@@ -688,26 +621,42 @@ function sealHappyImage() {
   return sealHappyPick;
 }
 
-function renderSealSticker(mood, level) {
+let sharkHappyPick = null;
+function sharkHappyImage() {
+  if (!sharkHappyPick) {
+    sharkHappyPick = pick(SHARK_STICKERS.happyPool);
+  }
+  return sharkHappyPick;
+}
+
+function renderAnimalSticker(stickers, happyImage, altText, prefix, mood, level) {
   let src;
-  if (mood === "love") src = SEAL_STICKERS.love;
-  else if (mood === "yum") src = SEAL_STICKERS.yum;
-  else if (mood === "sad" || mood === "tired") src = SEAL_STICKERS.sad;
-  else src = sealHappyImage();
+  if (mood === "love") src = stickers.love;
+  else if (mood === "yum") src = stickers.yum;
+  else if (mood === "sad" || mood === "tired") src = stickers.sad;
+  else src = happyImage();
 
   const earned = ACCESSORY_TIERS.filter((t) => level >= t.level);
-  const badge = earned.length ? SEAL_ACCESSORY_EMOJI[earned[earned.length - 1].label] || "" : "";
+  const badge = earned.length ? ACCESSORY_EMOJI[earned[earned.length - 1].label] || "" : "";
 
   return `
-    <div class="seal-sticker-wrap">
-      <img src="${src}" alt="Säl" class="seal-sticker-img" />
-      ${badge ? `<span class="seal-accessory-badge">${badge}</span>` : ""}
+    <div class="${prefix}-sticker-wrap">
+      <img src="${src}" alt="${altText}" class="${prefix}-sticker-img" />
+      ${badge ? `<span class="${prefix}-accessory-badge">${badge}</span>` : ""}
     </div>
   `;
 }
 
+function renderSealSticker(mood, level) {
+  return renderAnimalSticker(SEAL_STICKERS, sealHappyImage, "Säl", "seal", mood, level);
+}
+
+function renderSharkSticker(mood, level) {
+  return renderAnimalSticker(SHARK_STICKERS, sharkHappyImage, "Haj", "shark", mood, level);
+}
+
 function petSVG(type, mood, level) {
-  return type === "seal" ? renderSealSticker(mood, level) : renderSharkSVG(mood, level);
+  return type === "seal" ? renderSealSticker(mood, level) : renderSharkSticker(mood, level);
 }
 
 let currentMood = "happy";

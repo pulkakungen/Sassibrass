@@ -644,8 +644,70 @@ function renderSealSVG(mood, level) {
   </svg>`;
 }
 
+const SEAL_STICKERS = {
+  love: "icons/seal/love.png",
+  yum: "icons/seal/yum.png",
+  sad: "icons/seal/sad.png",
+  happyPool: [
+    "icons/seal/happy-1.png",
+    "icons/seal/happy-2.png",
+    "icons/seal/happy-3.png",
+    "icons/seal/happy-4.png",
+    "icons/seal/happy-5.png",
+    "icons/seal/happy-6.png",
+    "icons/seal/happy-7.png",
+    "icons/seal/happy-8.png",
+    "icons/seal/happy-9.png",
+    "icons/seal/happy-10.png",
+    "icons/seal/happy-11.png",
+    "icons/seal/happy-12.png",
+    "icons/seal/happy-13.png",
+    "icons/seal/happy-14.png"
+  ]
+};
+
+const SEAL_ACCESSORY_EMOJI = {
+  Stjärnpannband: "⭐",
+  Krona: "👑",
+  Halsband: "📿",
+  Rosett: "🎀",
+  Handväska: "👜",
+  Solglasögon: "🕶️",
+  Gosedjur: "🧸",
+  Kudde: "🛋️",
+  Glitter: "✨"
+};
+
+// Slumpas en gång per app-session, inte varje render, så bilden inte hoppar
+// runt varje gång hon bockar av en uppgift.
+let sealHappyPick = null;
+function sealHappyImage() {
+  if (!sealHappyPick) {
+    sealHappyPick = pick(SEAL_STICKERS.happyPool);
+  }
+  return sealHappyPick;
+}
+
+function renderSealSticker(mood, level) {
+  let src;
+  if (mood === "love") src = SEAL_STICKERS.love;
+  else if (mood === "yum") src = SEAL_STICKERS.yum;
+  else if (mood === "sad") src = SEAL_STICKERS.sad;
+  else src = sealHappyImage();
+
+  const earned = ACCESSORY_TIERS.filter((t) => level >= t.level);
+  const badge = earned.length ? SEAL_ACCESSORY_EMOJI[earned[earned.length - 1].label] || "" : "";
+
+  return `
+    <div class="seal-sticker-wrap">
+      <img src="${src}" alt="Säl" class="seal-sticker-img" />
+      ${badge ? `<span class="seal-accessory-badge">${badge}</span>` : ""}
+    </div>
+  `;
+}
+
 function petSVG(type, mood, level) {
-  return type === "seal" ? renderSealSVG(mood, level) : renderSharkSVG(mood, level);
+  return type === "seal" ? renderSealSticker(mood, level) : renderSharkSVG(mood, level);
 }
 
 let currentMood = "happy";
@@ -789,7 +851,8 @@ function renderTaskSections() {
 }
 
 function renderAll() {
-  updatePetAvatars("happy");
+  const restingMood = state.hunger <= 25 || state.happiness <= 25 ? "sad" : "happy";
+  updatePetAvatars(restingMood);
   updateStatsUI();
   renderTaskSections();
   renderBabyAvatar();

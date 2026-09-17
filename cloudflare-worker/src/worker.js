@@ -603,6 +603,25 @@ export default {
       );
     }
 
+    // Skriver dagens rad till kalkylarket direkt, för att testa kopplingen.
+    if (url.pathname === "/admin/sheet-now" && request.method === "GET") {
+      const { dateStr, minutesOfDay } = stockholmParts(new Date());
+      const stateRaw = await env.PUSH_KV.get(STATE_KEY);
+      const res = await maybeSendDailySheet(env, {
+        app: "sassibrass",
+        title: "Sassibrass",
+        dateStr,
+        minutesOfDay,
+        historyPrefix: HISTORY_PREFIX,
+        streak: stateRaw ? JSON.parse(stateRaw).streak ?? null : null,
+        force: true
+      });
+      return new Response(
+        res.ok ? `Skrivet till arket \u2705\n${res.date}: ${res.done} av ${res.total} klara` : `Gick inte: ${res.reason}`,
+        { headers: { ...CORS_HEADERS, "Content-Type": "text/plain; charset=utf-8" } }
+      );
+    }
+
     if (url.pathname === "/admin/send-test" && request.method === "GET") {
       const ok = await sendPush(env, "Testnotis från Sassibrass! Om du ser den här funkar allt precis som det ska 🦈✅", "test");
       return new Response(

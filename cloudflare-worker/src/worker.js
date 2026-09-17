@@ -51,7 +51,6 @@ const REPORT_COLUMNS = [
   { id: "tandborste-laddning", label: "Ladda eltandborste" },
   { id: "planera-veckan", label: "Planera kommande vecka" },
   { id: "meditera", label: "Meditera" },
-  { id: "dagbok", label: "Skriv dagbok" },
   { id: "las-bok", label: "Läs bok" },
   { id: "lagga-sig", label: "Lägg dig i tid" }
 ];

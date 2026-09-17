@@ -209,8 +209,8 @@ const TASK_SECTIONS = [
     emoji: "🤸‍♀️",
     title: "Cheerleading & träning",
     tasks: [
-      { id: "cheerleading", emoji: "🤸‍♀️", text: "Gå på cheerleading", days: [DAG_TIS, DAG_TORS, DAG_SON], reward: "food" },
-      { id: "duscha", emoji: "🚿", text: "Duscha", days: [DAG_TIS, DAG_TORS, DAG_SON], reward: "love" }
+      { id: "cheerleading", emoji: "🤸‍♀️", text: "Gå på cheerleading", schedule: [{ day: DAG_TORS, weekParity: "odd" }], reward: "food" },
+      { id: "duscha", emoji: "🚿", text: "Duscha", schedule: [{ day: DAG_TORS, weekParity: "odd" }], reward: "love" }
     ]
   },
   {
@@ -225,8 +225,7 @@ const TASK_SECTIONS = [
       { id: "tandborste-laddning", emoji: "🪥", text: "Ladda eltandborsten", parity: "even", reward: "love" },
       { id: "planera-veckan", emoji: "🗒️", text: "Planera din kommande vecka", days: [DAG_SON], reward: "food" },
       { id: "meditera", emoji: "🧘‍♀️", text: "Meditera", reward: "love" },
-      { id: "dagbok", emoji: "📓", text: "Skriv dagbok", reward: "food" },
-      { id: "las-bok", emoji: "📚", text: "Läs bok", reward: "love" },
+      { id: "las-bok", emoji: "📚", text: "Läs bok", reward: "food" },
       { id: "lagga-sig", emoji: "😴", text: "Lägg dig i tid", reward: "food" }
     ]
   }

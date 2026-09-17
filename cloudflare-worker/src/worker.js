@@ -140,11 +140,14 @@ const FIXED_REMINDERS = [
   }
 ];
 
-const NAG_MESSAGES = [
+const HUNGRY_NAG_MESSAGES = [
   "Psst... jag är lite hungrig 🥺🍤 Var är du?",
+  "Magen kurrar, kan jag få lite mat? 🌊🍤"
+];
+
+const LONELY_NAG_MESSAGES = [
   "Har du glömt mig? Jag saknar dig! 🥹💕",
   "Hallå där! Jag längtar efter lite uppmärksamhet 🦭✨",
-  "Magen kurrar och jag är ensam här... kom och hälsa på! 🌊",
   "Jag sitter och väntar på dig, kompis 🥺 Kika in i appen!"
 ];
 
@@ -320,9 +323,11 @@ async function runScheduledChecks(env) {
   const lastNagMs = state.lastNagAt ? new Date(state.lastNagAt).getTime() : 0;
   const gapSinceNag = now.getTime() - lastNagMs;
 
-  const isHungryOrLonely = estimatedHunger < NAG_THRESHOLD || estimatedHappiness < NAG_THRESHOLD;
-  if (isHungryOrLonely && gapSinceNag > NAG_GAP_MS) {
-    await sendPush(env, pick(NAG_MESSAGES), "nag");
+  const isHungry = estimatedHunger < NAG_THRESHOLD;
+  const isLonely = estimatedHappiness < NAG_THRESHOLD;
+  if ((isHungry || isLonely) && gapSinceNag > NAG_GAP_MS) {
+    const message = isHungry ? pick(HUNGRY_NAG_MESSAGES) : pick(LONELY_NAG_MESSAGES);
+    await sendPush(env, message, "nag");
     state.lastNagAt = now.toISOString();
     await env.PUSH_KV.put(STATE_KEY, JSON.stringify(state));
   }

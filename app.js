@@ -968,6 +968,7 @@ function feedPet() {
   flashMood("yum", 900);
   document.getElementById("pet-avatar-big").classList.add("pulse-once");
   setTimeout(() => document.getElementById("pet-avatar-big").classList.remove("pulse-once"), 500);
+  syncStateToWorker();
 }
 
 function lovePet() {
@@ -981,6 +982,7 @@ function lovePet() {
   flashMood("love", 900);
   document.getElementById("pet-avatar-big").classList.add("pulse-once");
   setTimeout(() => document.getElementById("pet-avatar-big").classList.remove("pulse-once"), 500);
+  syncStateToWorker();
 }
 
 /* ---------------------------------------------------------

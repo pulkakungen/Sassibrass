@@ -288,6 +288,7 @@ const FOOD_PER_TASK = 1;
 const LOVE_PER_TASK = 1;
 const MAX_FOOD = 4; // tak på lagret, så mat/kärlek måste tjänas in löpande istället för att hopa sig
 const MAX_LOVE = 4;
+const BATH_UNLOCK_LEVEL = 10; // nivå då hon får kunna bada sitt djur
 
 function xpToNext(level) {
   return 350 + (level - 1) * 80;
@@ -352,6 +353,13 @@ const LOVE_MESSAGES = [
   "Jag älskar dig också! 🥹💖",
   "Kramar tillbaka så hårt jag kan! 🤗",
   "Bästa kompisar för alltid! 💞"
+];
+
+const BATH_MESSAGES = [
+  "Plask plask, så skönt att bada! 🛁💦",
+  "Bubbel bubbel, jag blir så fin och ren! 🫧",
+  "Vattnet är perfekt, tack för badet! 💙",
+  "Jag simmar av glädje! 🌊✨"
 ];
 
 const GREETING_MORNING = [
@@ -762,6 +770,7 @@ function updateStatsUI() {
 
   document.getElementById("feed-btn").disabled = state.food <= 0;
   document.getElementById("love-btn").disabled = state.love <= 0;
+  document.getElementById("bath-btn").hidden = state.level < BATH_UNLOCK_LEVEL;
 
   const doneCount = Object.keys(state.completedToday).length;
   const totalToday = totalTasksToday();
@@ -992,6 +1001,23 @@ function lovePet() {
   syncStateToWorker();
 }
 
+// Kosmetiskt lekmoment, upplåst vid BATH_UNLOCK_LEVEL. Ingen resurs att ta
+// slut på (som mat/kärlek) - bara kul att kunna göra om och om igen.
+function bathePet() {
+  if (state.level < BATH_UNLOCK_LEVEL) return;
+  const overlay = document.getElementById("bath-overlay");
+  overlay.classList.add("active");
+  setTimeout(() => overlay.classList.remove("active"), 2600);
+
+  setBubble(pick(BATH_MESSAGES));
+  flashMood("love", 1200);
+  floatEmojiFromPet("💧");
+  setTimeout(() => floatEmojiFromPet("🫧"), 250);
+  setTimeout(() => floatEmojiFromPet("💦"), 500);
+  document.getElementById("pet-avatar-big").classList.add("pulse-once");
+  setTimeout(() => document.getElementById("pet-avatar-big").classList.remove("pulse-once"), 500);
+}
+
 /* ---------------------------------------------------------
    Start-skärm
    --------------------------------------------------------- */
@@ -1058,6 +1084,7 @@ function initAppEvents() {
 
   document.getElementById("feed-btn").addEventListener("click", feedPet);
   document.getElementById("love-btn").addEventListener("click", lovePet);
+  document.getElementById("bath-btn").addEventListener("click", bathePet);
 
   document.getElementById("notif-btn").addEventListener("click", async () => {
     if (DEMO_MODE) {

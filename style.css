@@ -342,6 +342,8 @@ button {
   align-items: flex-end;
   justify-content: center;
   gap: 6px;
+  position: relative;
+  z-index: 2;
 }
 .pet-size-wrap {
   display: inline-block;
@@ -433,12 +435,16 @@ button {
   box-shadow: 0 4px 10px rgba(0,0,0,0.08);
   margin-bottom: 16px;
   max-width: 90%;
+  position: relative;
+  z-index: 2;
 }
 .feed-buttons {
   display: flex;
   gap: 12px;
   justify-content: center;
   flex-wrap: wrap;
+  position: relative;
+  z-index: 2;
 }
 .feed-btn {
   background: #fff;
@@ -464,6 +470,47 @@ button {
   font-size: 0.78rem;
 }
 .feed-btn.love .count-badge { background: #ffd7e7; }
+.feed-btn.bath { background: #eafcff; }
+
+.bath-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+.bath-overlay.active {
+  height: 52%;
+  animation: water-rise 0.6s cubic-bezier(.34,1.56,.64,1);
+}
+.bath-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(143,216,247,0.5) 0%, rgba(90,190,240,0.7) 100%);
+}
+.bath-overlay::after {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: -10%;
+  width: 120%;
+  height: 24px;
+  background: radial-gradient(ellipse at center, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
+  background-size: 50px 24px;
+  animation: wave-drift 1.6s linear infinite;
+}
+@keyframes water-rise {
+  from { height: 0; }
+  to { height: 52%; }
+}
+@keyframes wave-drift {
+  from { background-position-x: 0; }
+  to { background-position-x: 50px; }
+}
 
 /* ---------- task sections ---------- */
 .task-sections {

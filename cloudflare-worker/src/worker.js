@@ -1,4 +1,6 @@
 import { buildPushPayload } from "@block65/webcrypto-web-push";
+import { handlePanelRequest, mergeSyncedTasks } from "./panel.js";
+import { maybeSendDailySheet } from "./sheets.js";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -214,7 +216,7 @@ function denied() {
 
 // Normaliserad lägesbild för föräldrapanelen. Samma form i alla appar, så
 // panelen slipper veta hur varje enskild app är byggd inuti.
-async function buildSummary(env) {
+async function buildSummary(env, url, request) {
   const now = new Date();
   const { dateStr } = stockholmParts(now);
   const subRaw = await env.PUSH_KV.get(SUBSCRIPTION_KEY);
@@ -239,16 +241,26 @@ async function buildSummary(env) {
     });
   }
 
+  // Länkar så att föräldrapanelen kan lägga en knapp rakt in i kortet.
+  const key = (url ? url.searchParams.get("key") : null) || (request ? request.headers.get("X-Admin-Key") : null);
+  const lank = (path) => (url ? url.origin + path + (key ? "?key=" + encodeURIComponent(key) : "") : null);
+
   return {
     app: "sassibrass",
     title: "Sassibrass",
     child: "Sassa",
+    panelUrl: lank("/panel"),
+    links: [
+      { label: "Panel", url: lank("/panel") },
+      { label: "Status", url: lank("/admin/status") },
+      { label: "Rapport", url: lank("/report") }
+    ],
     now: now.toISOString(),
     dateStr,
     notifications: !!subRaw,
     lastSyncAt: state ? state.lastSyncAt : null,
     lastNagAt: state ? state.lastNagAt : null,
-    allDoneToday: !!(state && state.allDoneToday),
+    allDoneToday: tasks.length > 0 ? tasks.every((t) => t.done) : !!(state && state.allDoneToday),
     hunger: state && typeof state.hunger === "number" ? state.hunger : null,
     happiness: state && typeof state.happiness === "number" ? state.happiness : null,
     level: state && typeof state.level === "number" ? state.level : null,
@@ -330,6 +342,17 @@ async function handleScheduled(env) {
 async function runScheduledChecks(env) {
   const now = new Date();
   const { dateStr, minutesOfDay, weekday } = stockholmParts(now);
+
+  // dagens rad till kalkylarket, strax före midnatt
+  const stateForSheet = await env.PUSH_KV.get(STATE_KEY);
+  await maybeSendDailySheet(env, {
+    app: "sassibrass",
+    title: "Sassibrass",
+    dateStr,
+    minutesOfDay,
+    historyPrefix: HISTORY_PREFIX,
+    streak: stateForSheet ? JSON.parse(stateForSheet).streak ?? null : null
+  });
 
   const hasSub = !!(await env.PUSH_KV.get(SUBSCRIPTION_KEY));
   if (!hasSub) return;
@@ -488,14 +511,26 @@ export default {
       }
       await env.PUSH_KV.put(STATE_KEY, JSON.stringify(state));
 
+      const tidigareRaw = await env.PUSH_KV.get(HISTORY_PREFIX + dateStr);
+      const tidigare = tidigareRaw ? JSON.parse(tidigareRaw) : {};
+      const tasks = mergeSyncedTasks(tidigare, Array.isArray(body.tasks) ? body.tasks : []);
+
       await mergeHistoryRecord(env, dateStr, {
-        tasks: Array.isArray(body.tasks) ? body.tasks : [],
-        allDoneToday: !!body.allDoneToday,
+        tasks,
+        allDoneToday: tasks.length > 0 && tasks.every((t) => t.done),
         updatedAt: new Date().toISOString()
       });
 
       return json({ ok: true });
     }
+
+    const panelRes = await handlePanelRequest(request, env, url, {
+      title: "Sassibrass 🦈",
+      historyPrefix: HISTORY_PREFIX,
+      authorized: adminKeyOk,
+      corsHeaders: CORS_HEADERS
+    });
+    if (panelRes) return panelRes;
 
     if (url.pathname.startsWith("/admin") || url.pathname === "/report") {
       if (!adminKeyOk(request, url, env)) return denied();
@@ -506,7 +541,7 @@ export default {
     }
 
     if (url.pathname === "/admin/summary" && request.method === "GET") {
-      return json(await buildSummary(env));
+      return json(await buildSummary(env, url, request));
     }
 
     // Fritt meddelande från föräldrapanelen.
@@ -565,6 +600,25 @@ export default {
       return new Response(
         ok ? "Skickad! 💕" : "Misslyckades, troligen finns ingen aktiv prenumeration just nu (klockan 🔔 inte påslagen).",
         { headers: CORS_HEADERS }
+      );
+    }
+
+    // Skriver dagens rad till kalkylarket direkt, för att testa kopplingen.
+    if (url.pathname === "/admin/sheet-now" && request.method === "GET") {
+      const { dateStr, minutesOfDay } = stockholmParts(new Date());
+      const stateRaw = await env.PUSH_KV.get(STATE_KEY);
+      const res = await maybeSendDailySheet(env, {
+        app: "sassibrass",
+        title: "Sassibrass",
+        dateStr,
+        minutesOfDay,
+        historyPrefix: HISTORY_PREFIX,
+        streak: stateRaw ? JSON.parse(stateRaw).streak ?? null : null,
+        force: true
+      });
+      return new Response(
+        res.ok ? `Skrivet till arket \u2705\n${res.date}: ${res.done} av ${res.total} klara` : `Gick inte: ${res.reason}`,
+        { headers: { ...CORS_HEADERS, "Content-Type": "text/plain; charset=utf-8" } }
       );
     }
 

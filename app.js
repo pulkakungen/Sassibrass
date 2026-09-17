@@ -692,7 +692,7 @@ function renderSealSticker(mood, level) {
   let src;
   if (mood === "love") src = SEAL_STICKERS.love;
   else if (mood === "yum") src = SEAL_STICKERS.yum;
-  else if (mood === "sad") src = SEAL_STICKERS.sad;
+  else if (mood === "sad" || mood === "tired") src = SEAL_STICKERS.sad;
   else src = sealHappyImage();
 
   const earned = ACCESSORY_TIERS.filter((t) => level >= t.level);
@@ -850,8 +850,17 @@ function renderTaskSections() {
   });
 }
 
+function isEveningWindDown() {
+  const now = new Date();
+  return now.getHours() > 20 || (now.getHours() === 20 && now.getMinutes() >= 45);
+}
+
 function renderAll() {
-  const restingMood = state.hunger <= 25 || state.happiness <= 25 ? "sad" : "happy";
+  const restingMood = state.hunger <= 25 || state.happiness <= 25
+    ? "sad"
+    : isEveningWindDown()
+    ? "tired"
+    : "happy";
   updatePetAvatars(restingMood);
   updateStatsUI();
   renderTaskSections();

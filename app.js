@@ -187,7 +187,7 @@ const TASK_SECTIONS = [
         schedule: [{ day: DAG_SON, weekParity: "odd" }]
       },
       { id: "mellanmal", emoji: "🍎", text: "Ät ett mellanmål", reward: "food" },
-      { id: "tvatten", emoji: "🧺", text: "Gå ner med tvätten", days: [DAG_MAN, DAG_TORS], reward: "love" },
+      { id: "tvatten", emoji: "🧺", text: "Gå ner med tvätten", days: [DAG_TIS, DAG_LOR], reward: "love" },
       { id: "snygga-rum", emoji: "🧹", text: "Snygga upp rummet", reward: "food" },
       { id: "dammsuga", emoji: "🧺", text: "Dammsuga", days: [DAG_LOR], reward: "love" },
       { id: "stada-badrum", emoji: "🚽", text: "Städa badrummet", days: [DAG_LOR], reward: "food" },

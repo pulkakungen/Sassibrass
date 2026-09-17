@@ -960,7 +960,7 @@ function completeTask(taskId, sectionId) {
 function feedPet() {
   if (state.food <= 0) return;
   state.food -= 1;
-  state.hunger = clamp(state.hunger + 20, 0, 100);
+  state.hunger = clamp(state.hunger + 12, 0, 100);
   saveState();
   updateStatsUI();
   floatEmojiFromPet("🍤");

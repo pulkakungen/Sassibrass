@@ -209,7 +209,7 @@ async function mergeHistoryRecord(env, dateStr, patch) {
   return merged;
 }
 
-async function sendPush(env, message) {
+async function sendPush(env, message, tag) {
   const subRaw = await env.PUSH_KV.get(SUBSCRIPTION_KEY);
   if (!subRaw) return false;
 
@@ -222,7 +222,10 @@ async function sendPush(env, message) {
     };
 
     const payload = await buildPushPayload(
-      { data: JSON.stringify({ title: "Sassibrass", body: message }), options: { ttl: 3600 } },
+      {
+        data: JSON.stringify({ title: "Sassibrass", body: message, tag: tag || "sassibrass-reminder" }),
+        options: { ttl: 3600 }
+      },
       subscription,
       vapid
     );
@@ -272,7 +275,7 @@ async function runScheduledChecks(env) {
     const withinWindow = minutesOfDay >= slotStart && minutesOfDay < slotStart + 15;
     if (withinWindow && !sent.includes(reminder.id)) {
       const message = reminder.id === "affirmation" ? await getWeeklyAffirmation(env, now) : pick(reminder.messages);
-      const delivered = await sendPush(env, message);
+      const delivered = await sendPush(env, message, reminder.id);
       if (delivered) {
         sent.push(reminder.id);
         await env.PUSH_KV.put(sentKey, JSON.stringify(sent), { expirationTtl: 60 * 60 * 48 });
@@ -289,7 +292,7 @@ async function runScheduledChecks(env) {
     const reminderStart = schoolBlock[1] - 30;
     const withinSchoolEndWindow = minutesOfDay >= reminderStart && minutesOfDay < reminderStart + 15;
     if (withinSchoolEndWindow && !sent.includes("skoldagslut")) {
-      const delivered = await sendPush(env, SCHOOL_END_MESSAGE);
+      const delivered = await sendPush(env, SCHOOL_END_MESSAGE, "skoldagslut");
       if (delivered) {
         sent.push("skoldagslut");
         await env.PUSH_KV.put(sentKey, JSON.stringify(sent), { expirationTtl: 60 * 60 * 48 });
@@ -319,7 +322,7 @@ async function runScheduledChecks(env) {
 
   const isHungryOrLonely = estimatedHunger < NAG_THRESHOLD || estimatedHappiness < NAG_THRESHOLD;
   if (isHungryOrLonely && gapSinceNag > NAG_GAP_MS) {
-    await sendPush(env, pick(NAG_MESSAGES));
+    await sendPush(env, pick(NAG_MESSAGES), "nag");
     state.lastNagAt = now.toISOString();
     await env.PUSH_KV.put(STATE_KEY, JSON.stringify(state));
   }
@@ -464,7 +467,7 @@ export default {
     }
 
     if (url.pathname === "/admin/send-mamma-hej" && request.method === "GET") {
-      const ok = await sendPush(env, "Ha en fin dag i skolan. Jag älskar dig ❤️ / mamma");
+      const ok = await sendPush(env, "Ha en fin dag i skolan. Jag älskar dig ❤️ / mamma", "mamma-hej");
       return new Response(
         ok ? "Skickad! 💕" : "Misslyckades, troligen finns ingen aktiv prenumeration just nu (klockan 🔔 inte påslagen).",
         { headers: CORS_HEADERS }
@@ -472,7 +475,7 @@ export default {
     }
 
     if (url.pathname === "/admin/send-test" && request.method === "GET") {
-      const ok = await sendPush(env, "Testnotis från Sassibrass! Om du ser den här funkar allt precis som det ska 🦈✅");
+      const ok = await sendPush(env, "Testnotis från Sassibrass! Om du ser den här funkar allt precis som det ska 🦈✅", "test");
       return new Response(
         ok ? "Skickad! Kolla telefonen. 📬" : "Misslyckades, troligen finns ingen aktiv prenumeration just nu (klockan 🔔 inte påslagen).",
         { headers: CORS_HEADERS }
@@ -481,7 +484,7 @@ export default {
 
     if (url.pathname === "/admin/send-affirmation" && request.method === "GET") {
       const message = await getWeeklyAffirmation(env, new Date());
-      const ok = await sendPush(env, message);
+      const ok = await sendPush(env, message, "affirmation");
       if (ok) {
         const { dateStr } = stockholmParts(new Date());
         await mergeHistoryRecord(env, dateStr, { affirmationSent: message });

@@ -44,7 +44,7 @@ self.addEventListener("push", (event) => {
       icon: "icons/icon-192.png",
       badge: "icons/icon-192.png",
       vibrate: [100, 50, 100],
-      tag: "sassibrass-reminder",
+      tag: data.tag || "sassibrass-reminder",
       renotify: true,
       data: { url: "./index.html" }
     })

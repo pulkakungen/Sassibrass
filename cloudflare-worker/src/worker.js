@@ -227,6 +227,15 @@ async function buildSummary(env, url, request) {
   const sentRaw = await env.PUSH_KV.get(`reminders:${dateStr}`);
   const tasks = today && Array.isArray(today.tasks) ? today.tasks : [];
 
+  // Appen sänker hunger och humör löpande i telefonen, men servern hör bara
+  // av sig vid synk. Räkna fram var nivåerna ligger nu, med samma takt som
+  // appen använder, annars visar panelen gamla siffror.
+  const timmarSedanSynk = state && state.lastSyncAt ? (now - new Date(state.lastSyncAt)) / 3600000 : null;
+  const uppskatta = (varde, takt) =>
+    typeof varde === "number" && timmarSedanSynk !== null
+      ? Math.max(10, Math.round(varde - timmarSedanSynk * takt))
+      : null;
+
   const history = [];
   for (let i = 13; i >= 0; i--) {
     const d = new Date(now.getTime() - i * 86400000);
@@ -261,8 +270,11 @@ async function buildSummary(env, url, request) {
     lastSyncAt: state ? state.lastSyncAt : null,
     lastNagAt: state ? state.lastNagAt : null,
     allDoneToday: tasks.length > 0 ? tasks.every((t) => t.done) : !!(state && state.allDoneToday),
-    hunger: state && typeof state.hunger === "number" ? state.hunger : null,
-    happiness: state && typeof state.happiness === "number" ? state.happiness : null,
+    hunger: uppskatta(state && state.hunger, HUNGER_DECAY_PER_HOUR),
+    happiness: uppskatta(state && state.happiness, HAPPINESS_DECAY_PER_HOUR),
+    hungerAtSync: state && typeof state.hunger === "number" ? state.hunger : null,
+    happinessAtSync: state && typeof state.happiness === "number" ? state.happiness : null,
+    hoursSinceSync: timmarSedanSynk === null ? null : Math.round(timmarSedanSynk * 10) / 10,
     level: state && typeof state.level === "number" ? state.level : null,
     streak: state && typeof state.streak === "number" ? state.streak : null,
     petName: state && state.petName ? state.petName : null,

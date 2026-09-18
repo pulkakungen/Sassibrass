@@ -612,10 +612,16 @@ const SEAL_STICKERS = {
     "icons/seal/happy-10.png",
     "icons/seal/happy-11.png",
     "icons/seal/happy-12.png",
-    "icons/seal/happy-13.png",
     "icons/seal/happy-14.png"
-  ]
+  ],
+  // Snöbilden sparas till vintern (okt-feb) istället för att synas året runt.
+  winterPool: ["icons/seal/happy-13.png"]
 };
+
+function isWinterMonth(month) {
+  // 1=jan ... 12=dec. Vinter = okt-feb, dvs INTE mars-september.
+  return month <= 2 || month >= 10;
+}
 
 const SHARK_STICKERS = {
   love: "icons/shark/love.png",
@@ -641,7 +647,10 @@ const ACCESSORY_EMOJI = {
 let sealHappyPick = null;
 function sealHappyImage() {
   if (!sealHappyPick) {
-    sealHappyPick = pick(SEAL_STICKERS.happyPool);
+    const pool = isWinterMonth(new Date().getMonth() + 1)
+      ? SEAL_STICKERS.happyPool.concat(SEAL_STICKERS.winterPool)
+      : SEAL_STICKERS.happyPool;
+    sealHappyPick = pick(pool);
   }
   return sealHappyPick;
 }

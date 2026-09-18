@@ -192,7 +192,8 @@ const TASK_SECTIONS = [
       { id: "dammsuga", emoji: "🧺", text: "Dammsuga", days: [DAG_LOR], reward: "love" },
       { id: "stada-badrum", emoji: "🚽", text: "Städa badrummet", days: [DAG_LOR], reward: "food" },
       { id: "nedanvaning", emoji: "📥", text: "Plocka undan grejer från nedanvåningen", reward: "love" },
-      { id: "stada-rosa-rummet-2026-09-18", emoji: "🧽", text: "Städa rosa rummet", date: "2026-09-18", reward: "both" }
+      { id: "stada-rosa-rummet-2026-09-18", emoji: "🧽", text: "Städa rosa rummet", date: "2026-09-18", reward: "both" },
+      { id: "klader-vardagsrum-2026-09-18", emoji: "👚", text: "Ta upp alla kläder från vardagsrummet", date: "2026-09-18", reward: "food" }
     ]
   },
   {

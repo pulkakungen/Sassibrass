@@ -468,18 +468,33 @@ function defaultState() {
     completedToday: {},
     rewardedToday: {},
     totalCompleted: 0,
-    sectionsCollapsed: {}
+    sectionsCollapsed: {},
+    levelResetV1Applied: false
   };
 }
 
 let state = loadState();
+saveState(); // sparar direkt ifall engångsjusteringen ovan just kördes
+
+// Engångsjustering: för tillbaka nivån till 1 (siffran var för hög), men
+// behåller XP-baren lika full som den redan var, så det bara är numret
+// som ändras, inte hur nära hon känns till nästa nivå.
+function applyLevelResetMigration(s) {
+  if (!s.levelResetV1Applied && s.level > 1) {
+    const fillRatio = clamp(s.xp / xpToNext(s.level), 0, 0.99);
+    s.level = 1;
+    s.xp = Math.floor(fillRatio * xpToNext(1));
+  }
+  s.levelResetV1Applied = true;
+  return s;
+}
 
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultState();
     const parsed = JSON.parse(raw);
-    return Object.assign(defaultState(), parsed);
+    return applyLevelResetMigration(Object.assign(defaultState(), parsed));
   } catch (e) {
     return defaultState();
   }

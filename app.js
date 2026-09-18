@@ -900,6 +900,49 @@ function checkBabyMilestones() {
 /* ---------------------------------------------------------
    Logik: klara uppgift, mata, ge kärlek
    --------------------------------------------------------- */
+// Körs efter varje XP-vinst, och som en säkerhetskontroll vid appstart, så
+// att XP-baren aldrig kan fastna "full" utan att djuret faktiskt levlar upp.
+function resolvePendingLevelUps() {
+  const levelBefore = state.level;
+  let leveledUp = false;
+  while (state.xp >= xpToNext(state.level)) {
+    state.xp -= xpToNext(state.level);
+    state.level += 1;
+    state.food = clamp(state.food + 2, 0, MAX_FOOD);
+    state.love = clamp(state.love + 2, 0, MAX_LOVE);
+    leveledUp = true;
+  }
+
+  if (leveledUp) {
+    setTimeout(() => {
+      showToast(pick(LEVEL_UP_MESSAGES), true);
+      burstConfetti(30);
+    }, 350);
+
+    const newAccessory = ACCESSORY_TIERS.find((t) => t.level > levelBefore && t.level <= state.level);
+    const newSizeTier = [10, 20, 30].find((l) => l > levelBefore && l <= state.level);
+    let extraDelay = 900;
+    if (newAccessory) {
+      setTimeout(() => {
+        showToast(`Nytt pynt upplåst: ${newAccessory.label}! ✨`, true);
+        burstConfetti(24);
+      }, extraDelay);
+      extraDelay += 550;
+    }
+    if (newSizeTier) {
+      setTimeout(() => {
+        showToast("Djuret har växt sig större! 🌟🦈", true);
+        burstConfetti(24);
+      }, extraDelay);
+    }
+
+    checkBabyMilestones();
+    saveState();
+    updateStatsUI();
+  }
+  return leveledUp;
+}
+
 function completeTask(taskId, sectionId) {
   const alreadyDone = !!state.completedToday[taskId];
 
@@ -928,16 +971,6 @@ function completeTask(taskId, sectionId) {
     }
     state.totalCompleted += 1;
 
-    const levelBefore = state.level;
-    let leveledUp = false;
-    while (state.xp >= xpToNext(state.level)) {
-      state.xp -= xpToNext(state.level);
-      state.level += 1;
-      state.food = clamp(state.food + 2, 0, MAX_FOOD);
-      state.love = clamp(state.love + 2, 0, MAX_LOVE);
-      leveledUp = true;
-    }
-
     showToast(pick(TASK_MESSAGES));
     burstConfetti(14);
     flashMood(rewardType === "food" ? "yum" : "love", 900);
@@ -945,31 +978,7 @@ function completeTask(taskId, sectionId) {
       setTimeout(() => flashMood("yum", 900), 950);
     }
 
-    if (leveledUp) {
-      setTimeout(() => {
-        showToast(pick(LEVEL_UP_MESSAGES), true);
-        burstConfetti(30);
-      }, 350);
-
-      const newAccessory = ACCESSORY_TIERS.find((t) => t.level > levelBefore && t.level <= state.level);
-      const newSizeTier = [10, 20, 30].find((l) => l > levelBefore && l <= state.level);
-      let extraDelay = 900;
-      if (newAccessory) {
-        setTimeout(() => {
-          showToast(`Nytt pynt upplåst: ${newAccessory.label}! ✨`, true);
-          burstConfetti(24);
-        }, extraDelay);
-        extraDelay += 550;
-      }
-      if (newSizeTier) {
-        setTimeout(() => {
-          showToast("Djuret har växt sig större! 🌟🦈", true);
-          burstConfetti(24);
-        }, extraDelay);
-      }
-
-      checkBabyMilestones();
-    }
+    const leveledUp = resolvePendingLevelUps();
 
     const sectionDone = activeTasksForSection(section).every((t) => state.completedToday[t.id]);
     if (sectionDone) {
@@ -1180,6 +1189,7 @@ function init() {
   registerServiceWorker();
 
   if (state.petType) {
+    resolvePendingLevelUps(); // säkerhetskontroll: fångar upp om XP-baren blev "full" utan att levla
     showAppScreen();
   } else {
     document.getElementById("screen-start").classList.add("active");

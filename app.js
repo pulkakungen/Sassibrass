@@ -191,7 +191,8 @@ const TASK_SECTIONS = [
       { id: "snygga-rum", emoji: "🧹", text: "Snygga upp rummet", reward: "food" },
       { id: "dammsuga", emoji: "🧺", text: "Dammsuga", days: [DAG_LOR], reward: "love" },
       { id: "stada-badrum", emoji: "🚽", text: "Städa badrummet", days: [DAG_LOR], reward: "food" },
-      { id: "nedanvaning", emoji: "📥", text: "Plocka undan grejer från nedanvåningen", reward: "love" }
+      { id: "nedanvaning", emoji: "📥", text: "Plocka undan grejer från nedanvåningen", reward: "love" },
+      { id: "stada-rosa-rummet-2026-09-18", emoji: "🧽", text: "Städa rosa rummet", date: "2026-09-18", reward: "both" }
     ]
   },
   {
@@ -257,6 +258,10 @@ function weekParityMatches(weekParity, date) {
 // task.schedule: lista med {day, weekParity} för uppgifter som varierar per dag OCH jämn/udda vecka
 // (t.ex. sopsortering), används istället för days/parity när den finns.
 function isTaskActiveOnDate(task, date) {
+  if (task.date) {
+    const y = date.getFullYear(), m = String(date.getMonth() + 1).padStart(2, "0"), d = String(date.getDate()).padStart(2, "0");
+    return task.date === `${y}-${m}-${d}`;
+  }
   if (task.schedule) {
     const today = date.getDay();
     return task.schedule.some((rule) => rule.day === today && weekParityMatches(rule.weekParity, date));
@@ -904,10 +909,11 @@ function completeTask(taskId, sectionId) {
 
     const section = TASK_SECTIONS.find((s) => s.id === sectionId);
     const task = section && section.tasks.find((t) => t.id === taskId);
-    const rewardType = task && task.reward === "food" ? "food" : "love";
-    if (rewardType === "food") {
+    const rewardType = task && task.reward === "food" ? "food" : task && task.reward === "both" ? "both" : "love";
+    if (rewardType === "food" || rewardType === "both") {
       state.food = clamp(state.food + FOOD_PER_TASK, 0, MAX_FOOD);
-    } else {
+    }
+    if (rewardType === "love" || rewardType === "both") {
       state.love = clamp(state.love + LOVE_PER_TASK, 0, MAX_LOVE);
     }
     state.totalCompleted += 1;
@@ -925,6 +931,9 @@ function completeTask(taskId, sectionId) {
     showToast(pick(TASK_MESSAGES));
     burstConfetti(14);
     flashMood(rewardType === "food" ? "yum" : "love", 900);
+    if (rewardType === "both") {
+      setTimeout(() => flashMood("yum", 900), 950);
+    }
 
     if (leveledUp) {
       setTimeout(() => {

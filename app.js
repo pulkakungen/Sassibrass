@@ -199,7 +199,7 @@ const TASK_SECTIONS = [
     emoji: "👭",
     title: "Socialt & läxor",
     tasks: [
-      { id: "laxa", emoji: "📖", text: "Gör läxan", reward: "food" },
+      { id: "laxa", emoji: "📖", text: "Gör läxan", days: [DAG_MAN, DAG_TIS, DAG_ONS, DAG_TORS, DAG_LOR, DAG_SON], reward: "food" },
       { id: "kompis", emoji: "💬", text: "Träffa eller prata med en kompis", reward: "love" },
       { id: "piano", emoji: "🎹", text: "Träna piano 10 minuter", days: [DAG_MAN, DAG_ONS], reward: "food" }
     ]

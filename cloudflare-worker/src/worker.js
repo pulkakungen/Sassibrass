@@ -278,6 +278,8 @@ async function buildSummary(env, url, request) {
     happinessAtSync: state && typeof state.happiness === "number" ? state.happiness : null,
     hoursSinceSync: timmarSedanSynk === null ? null : Math.round(timmarSedanSynk * 10) / 10,
     level: state && typeof state.level === "number" ? state.level : null,
+    xp: state && typeof state.xp === "number" ? state.xp : null,
+    xpToNext: state && typeof state.xpToNext === "number" ? state.xpToNext : null,
     streak: state && typeof state.streak === "number" ? state.streak : null,
     petName: state && state.petName ? state.petName : null,
     doneToday: tasks.filter((t) => t.done).length,
@@ -528,6 +530,8 @@ export default {
         hunger: typeof body.hunger === "number" ? body.hunger : 80,
         happiness: typeof body.happiness === "number" ? body.happiness : 80,
         level: typeof body.level === "number" ? body.level : null,
+        xp: typeof body.xp === "number" ? body.xp : null,
+        xpToNext: typeof body.xpToNext === "number" ? body.xpToNext : null,
         streak: typeof body.streak === "number" ? body.streak : null,
         petName: typeof body.petName === "string" ? body.petName : null,
         lastNagAt: null

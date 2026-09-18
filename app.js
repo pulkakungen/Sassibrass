@@ -87,6 +87,8 @@ function syncStateToWorker() {
       hunger: state.hunger,
       happiness: state.happiness,
       level: state.level,
+      xp: state.xp,
+      xpToNext: xpToNext(state.level),
       streak: state.streak,
       petName: state.petName
     })

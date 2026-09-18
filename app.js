@@ -280,8 +280,50 @@ function isTaskActiveToday(task) {
 }
 function activeTasksForSection(section, date) {
   const d = date === undefined ? new Date() : date;
-  return section.tasks.filter((t) => isTaskActiveOnDate(t, d));
+  return section.tasks.filter((t) => isTaskActiveOnDate(t, d)).concat(extrasForSection(section.id, d));
 }
+/* Extrauppgifter som läggs till från föräldrapanelen. Hämtas från workern och
+   sparas lokalt, så de finns kvar även utan uppkoppling. */
+const EXTRA_STORAGE = DEMO_MODE ? "sassibrass_demo_extra_v1" : "sassibrass_extra_v1";
+let extraTasks = [];
+
+function extraDateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function loadExtras() {
+  try {
+    const raw = localStorage.getItem(EXTRA_STORAGE);
+    const list = raw ? JSON.parse(raw) : [];
+    extraTasks = Array.isArray(list) ? list : [];
+  } catch (e) {
+    extraTasks = [];
+  }
+}
+
+async function fetchExtras() {
+  if (DEMO_MODE) return;
+  try {
+    const res = await fetch(PUSH_WORKER_URL + "/extra?date=" + todayStr());
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!Array.isArray(data.tasks)) return;
+    extraTasks = data.tasks;
+    localStorage.setItem(EXTRA_STORAGE, JSON.stringify(extraTasks));
+    if (state.petType) {
+      renderTaskSections();
+      updateStatsUI();
+    }
+  } catch (e) {
+    // ingen uppkoppling, de sparade extrauppgifterna får duga
+  }
+}
+
+function extrasForSection(sectionId, date) {
+  const key = extraDateKey(date);
+  return extraTasks.filter((t) => (t.section || "hemma") === sectionId && t.date === key);
+}
+
 function totalTasksForDate(date) {
   return TASK_SECTIONS.reduce((s, sec) => s + activeTasksForSection(sec, date).length, 0);
 }
@@ -918,7 +960,7 @@ function completeTask(taskId, sectionId) {
     state.xp += XP_PER_TASK;
 
     const section = TASK_SECTIONS.find((s) => s.id === sectionId);
-    const task = section && section.tasks.find((t) => t.id === taskId);
+    const task = (section && section.tasks.find((t) => t.id === taskId)) || extraTasks.find((t) => t.id === taskId);
     const rewardType = task && task.reward === "food" ? "food" : task && task.reward === "both" ? "both" : "love";
     if (rewardType === "food" || rewardType === "both") {
       state.food = clamp(state.food + FOOD_PER_TASK, 0, MAX_FOOD);
@@ -1174,10 +1216,17 @@ function initAppEvents() {
    Init
    --------------------------------------------------------- */
 function init() {
+  loadExtras();
   handleDailyReset();
   applyStatDecay();
   initAppEvents();
   registerServiceWorker();
+  fetchExtras();
+
+  // hämta om när appen kommer fram igen, så nya extrauppgifter dyker upp
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) fetchExtras();
+  });
 
   if (state.petType) {
     showAppScreen();

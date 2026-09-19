@@ -469,12 +469,13 @@ function defaultState() {
     rewardedToday: {},
     totalCompleted: 0,
     sectionsCollapsed: {},
-    levelResetV1Applied: false
+    levelResetV1Applied: false,
+    levelBumpV2Applied: false
   };
 }
 
 let state = loadState();
-saveState(); // sparar direkt ifall engångsjusteringen ovan just kördes
+saveState(); // sparar direkt ifall engångsjusteringarna ovan just kördes
 
 // Engångsjustering: för tillbaka nivån till 1 (siffran var för hög), men
 // behåller XP-baren lika full som den redan var, så det bara är numret
@@ -489,12 +490,27 @@ function applyLevelResetMigration(s) {
   return s;
 }
 
+// Engångsjustering nummer två: nivå 1 var för lågt, hon ska vara på 2.
+// Samma princip - behåll hur full baren känns, flytta bara upp numret.
+// totalCompleted > 0 skiljer ett riktigt, redan använt djur från ett
+// helt nyskapat (som legitimt ska börja på nivå 1 utan att bumpas).
+function applyLevelBumpMigration(s) {
+  if (!s.levelBumpV2Applied && s.level === 1 && s.totalCompleted > 0) {
+    const fillRatio = clamp(s.xp / xpToNext(1), 0, 0.99);
+    s.level = 2;
+    s.xp = Math.floor(fillRatio * xpToNext(2));
+  }
+  s.levelBumpV2Applied = true;
+  return s;
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultState();
     const parsed = JSON.parse(raw);
-    return applyLevelResetMigration(Object.assign(defaultState(), parsed));
+    const merged = applyLevelResetMigration(Object.assign(defaultState(), parsed));
+    return applyLevelBumpMigration(merged);
   } catch (e) {
     return defaultState();
   }

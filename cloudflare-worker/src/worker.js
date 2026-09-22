@@ -123,8 +123,8 @@ const FIXED_REMINDERS = [
   },
   {
     id: "affirmation",
-    hour: 6,
-    minute: 45,
+    hour: 7,
+    minute: 30,
     messages: [
       "🌟 Veckans affirmation: Jag gör mitt bästa, och mitt bästa är helt och hållet tillräckligt.",
       "🌟 Veckans affirmation: Jag har förmågan att lära mig svåra saker om jag bara ger det lite tid.",

@@ -98,13 +98,18 @@ const FIXED_REMINDERS = [
     messages: [
       "Frukostdags! Kom och mata mig med något gott du också 🍳🦭",
       "Psst, dags för frukost innan skolan! 🥣💕"
+    ],
+    weekendMessages: [
+      "Frukostdags! Kom och mata mig med något gott du också 🍳🦭",
+      "Helgfrukost! Ta den i lugn och ro 🥣💕"
     ]
   },
   {
     id: "mamma-hej",
     hour: 7,
     minute: 45,
-    messages: ["Ha en fin dag i skolan. Jag älskar dig ❤️ / mamma"]
+    messages: ["Ha en fin dag i skolan. Jag älskar dig ❤️ / mamma"],
+    weekendMessages: ["Ha en fin dag idag. Jag älskar dig ❤️ / mamma"]
   },
   {
     id: "kvall",
@@ -395,7 +400,10 @@ async function runScheduledChecks(env) {
     const slotStart = reminder.hour * 60 + reminder.minute;
     const withinWindow = minutesOfDay >= slotStart && minutesOfDay < slotStart + 15;
     if (withinWindow && !sent.includes(reminder.id)) {
-      const message = reminder.id === "affirmation" ? await getWeeklyAffirmation(env, now) : pick(reminder.messages);
+      // Helgen har egna formuleringar där det behövs, så inget skolsnack på en söndag.
+      const isWeekend = weekday === 0 || weekday === 6;
+      const lines = isWeekend && reminder.weekendMessages ? reminder.weekendMessages : reminder.messages;
+      const message = reminder.id === "affirmation" ? await getWeeklyAffirmation(env, now) : pick(lines);
       const delivered = await sendPush(env, message, reminder.id);
       if (delivered) {
         sent.push(reminder.id);

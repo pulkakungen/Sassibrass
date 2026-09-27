@@ -101,6 +101,7 @@ function syncStateToWorker() {
 // days: valfri lista med veckodagsnummer (0=söndag ... 6=lördag) uppgiften gäller.
 // Ingen "days"-lista = uppgiften gäller varje dag.
 const DAG_MAN = 1, DAG_TIS = 2, DAG_ONS = 3, DAG_TORS = 4, DAG_FRE = 5, DAG_LOR = 6, DAG_SON = 0;
+const SKOLDAGAR = [DAG_MAN, DAG_TIS, DAG_ONS, DAG_TORS, DAG_FRE];
 
 const TASK_SECTIONS = [
   {
@@ -133,9 +134,9 @@ const TASK_SECTIONS = [
     emoji: "🎒",
     title: "Till skolan",
     tasks: [
-      { id: "padda-bocker", emoji: "💻", text: "Ta med padda och böcker", reward: "love" },
+      { id: "padda-bocker", emoji: "💻", text: "Ta med padda och böcker", days: SKOLDAGAR, reward: "love" },
       { id: "schema", emoji: "🗓️", text: "Kolla schemat", reward: "food" },
-      { id: "till-skolan", emoji: "🚌", text: "Ta dig till skolan i tid", reward: "love" }
+      { id: "till-skolan", emoji: "🚌", text: "Ta dig till skolan i tid", days: SKOLDAGAR, reward: "love" }
     ]
   },
   {

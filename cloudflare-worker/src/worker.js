@@ -1,6 +1,7 @@
 import { buildPushPayload } from "@block65/webcrypto-web-push";
 import { handlePanelRequest, mergeSyncedTasks } from "./panel.js";
 import { maybeSendDailySheet } from "./sheets.js";
+import { handleJournalRequest, runJournalSchedule } from "./journal.js";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -365,6 +366,7 @@ const SCHOOL_END_MESSAGE =
   "Snart slut för idag! Glöm inte packa med dig böckerna hem, och kolla vad som står på listan 📚🎒";
 
 async function handleScheduled(env) {
+  await runJournalSchedule(env);
   try {
     await runScheduledChecks(env);
   } catch (err) {
@@ -512,6 +514,10 @@ async function buildReportCsv(env) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+
+    // Bullet journal-appen (journal/) har egna, nyckelskyddade vägar.
+    const journalRes = await handleJournalRequest(request, env, url);
+    if (journalRes) return journalRes;
 
     if (request.method === "OPTIONS") {
       return new Response(null, { headers: CORS_HEADERS });

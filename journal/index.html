@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Bullet</title>
+<meta name="theme-color" content="#fbf8f1" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#1c1b19" media="(prefers-color-scheme: dark)" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icon-192.png" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<main id="app">
+
+  <!-- ================= DAG ================= -->
+  <section id="view-day" class="view active">
+    <header class="page-head">
+      <button class="nav-arrow" data-shift="-1" aria-label="Föregående dag">‹</button>
+      <div class="page-title">
+        <div id="day-weekday" class="eyebrow"></div>
+        <h1 id="day-title"></h1>
+      </div>
+      <button class="nav-arrow" data-shift="1" aria-label="Nästa dag">›</button>
+    </header>
+    <button id="today-jump" class="link-btn" hidden>Till idag</button>
+
+    <div id="migrate-banner" class="banner" hidden>
+      <span id="migrate-text"></span>
+      <button id="migrate-open" class="btn-small">Gå igenom</button>
+    </div>
+
+    <section class="block" id="cal-block" hidden>
+      <h2>Kalender</h2>
+      <ul id="cal-list" class="log"></ul>
+    </section>
+
+    <section class="block">
+      <h2>Logg</h2>
+      <ul id="log-list" class="log"></ul>
+      <form id="log-form" class="log-form" autocomplete="off">
+        <input id="log-input" type="text" placeholder="Skriv... ( o händelse, - anteckning, ! viktigt )" />
+        <button type="submit" class="btn-small">Lägg till</button>
+      </form>
+    </section>
+
+    <section class="block" id="due-block">
+      <h2>Dags för</h2>
+      <p class="hint">Rutiner som är förfallna. Bocka av när du gjort dem, eller lägg dem i dagens logg.</p>
+      <ul id="due-list" class="due-list"></ul>
+    </section>
+  </section>
+
+  <!-- ================= MÅNAD ================= -->
+  <section id="view-month" class="view">
+    <header class="page-head">
+      <button class="nav-arrow" data-mshift="-1" aria-label="Föregående månad">‹</button>
+      <div class="page-title">
+        <div id="month-year" class="eyebrow"></div>
+        <h1 id="month-title"></h1>
+      </div>
+      <button class="nav-arrow" data-mshift="1" aria-label="Nästa månad">›</button>
+    </header>
+    <ol id="month-list" class="month-list"></ol>
+  </section>
+
+  <!-- ================= TRACKER ================= -->
+  <section id="view-tracker" class="view">
+    <header class="page-head">
+      <button class="nav-arrow" data-tshift="-1" aria-label="Föregående månad">‹</button>
+      <div class="page-title">
+        <div class="eyebrow">Tracker</div>
+        <h1 id="tracker-title"></h1>
+      </div>
+      <button class="nav-arrow" data-tshift="1" aria-label="Nästa månad">›</button>
+    </header>
+    <p class="hint">Tryck på en ruta för att markera eller avmarkera en dag.</p>
+    <div class="tracker-scroll"><table id="tracker-table" class="tracker"></table></div>
+  </section>
+
+  <!-- ================= RUTINER ================= -->
+  <section id="view-routines" class="view">
+    <header class="page-head plain">
+      <div class="page-title">
+        <div class="eyebrow">Hushåll, träning och annat som återkommer</div>
+        <h1>Rutiner</h1>
+      </div>
+    </header>
+    <div id="routine-groups"></div>
+    <button id="routine-add" class="btn-primary">Ny rutin</button>
+
+    <section class="block settings">
+      <h2>Inställningar</h2>
+      <label class="field">
+        <span>Google OAuth klient ID</span>
+        <input id="client-id" type="text" placeholder="xxxx.apps.googleusercontent.com" />
+      </label>
+      <div class="row">
+        <button id="gcal-connect" class="btn-small">Koppla Google Kalender</button>
+        <button id="gcal-disconnect" class="btn-small ghost" hidden>Koppla från</button>
+      </div>
+      <p id="gcal-status" class="hint"></p>
+      <div class="row">
+        <button id="export-btn" class="btn-small ghost">Exportera data</button>
+        <label class="btn-small ghost file-btn">Importera<input id="import-input" type="file" accept="application/json" hidden /></label>
+      </div>
+    </section>
+  </section>
+
+</main>
+
+<nav class="tabbar">
+  <button class="tab active" data-view="day"><span>•</span>Dag</button>
+  <button class="tab" data-view="month"><span>○</span>Månad</button>
+  <button class="tab" data-view="tracker"><span>▦</span>Tracker</button>
+  <button class="tab" data-view="routines"><span>↻</span>Rutiner</button>
+</nav>
+
+<!-- Åtgärder för en loggrad -->
+<dialog id="entry-dialog" class="sheet">
+  <form method="dialog">
+    <p id="entry-dialog-text" class="sheet-title"></p>
+    <button value="toggle" id="act-toggle">Markera klar</button>
+    <button value="prio" id="act-prio">Viktig</button>
+    <button value="migrate">› Flytta till imorgon</button>
+    <button value="schedule" id="act-schedule">‹ Lägg i Google Kalender</button>
+    <button value="edit">Ändra text</button>
+    <button value="cancel-task">Stryk (inte relevant längre)</button>
+    <button value="delete" class="danger">Ta bort</button>
+    <button value="close" class="ghost">Stäng</button>
+  </form>
+</dialog>
+
+<!-- Schemalägg i kalendern -->
+<dialog id="schedule-dialog" class="sheet">
+  <form id="schedule-form" method="dialog">
+    <p class="sheet-title">Lägg i Google Kalender</p>
+    <label class="field"><span>Titel</span><input id="sch-title" required /></label>
+    <label class="field"><span>Datum</span><input id="sch-date" type="date" required /></label>
+    <div class="row">
+      <label class="field"><span>Start</span><input id="sch-time" type="time" value="09:00" required /></label>
+      <label class="field"><span>Minuter</span><input id="sch-dur" type="number" min="5" step="5" value="30" required /></label>
+    </div>
+    <div class="row">
+      <button value="ok" class="btn-primary">Spara i kalendern</button>
+      <button value="close" class="btn-small ghost" formnovalidate>Avbryt</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Migrering -->
+<dialog id="migrate-dialog" class="sheet">
+  <form method="dialog">
+    <p class="sheet-title">Öppna uppgifter från tidigare dagar</p>
+    <p class="hint">Flytta hit det som fortfarande spelar roll. Stryk resten.</p>
+    <ul id="migrate-list" class="migrate-list"></ul>
+    <button value="close" class="ghost">Klar</button>
+  </form>
+</dialog>
+
+<!-- Rutin -->
+<dialog id="routine-dialog" class="sheet">
+  <form id="routine-form" method="dialog">
+    <p class="sheet-title" id="routine-dialog-title">Ny rutin</p>
+    <label class="field"><span>Namn</span><input id="rt-name" required maxlength="60" /></label>
+    <div class="row">
+      <label class="field"><span>Kategori</span>
+        <select id="rt-cat">
+          <option value="hem">Hem</option>
+          <option value="traning">Träning</option>
+          <option value="mig">Jag</option>
+        </select>
+      </label>
+      <label class="field"><span>Var n:e dag</span><input id="rt-every" type="number" min="1" max="365" value="7" required /></label>
+    </div>
+    <div class="row">
+      <button value="ok" class="btn-primary">Spara</button>
+      <button value="delete" id="rt-delete" class="btn-small danger" formnovalidate>Ta bort</button>
+      <button value="close" class="btn-small ghost" formnovalidate>Avbryt</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

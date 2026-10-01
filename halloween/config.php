@@ -5,7 +5,7 @@ return [
     'mail_to'   => 'bellaochemilsinbjudningar@gmail.com',
     // Avsändaradress: bör vara en adress på din egen domän hos one.com,
     // annars kan mejlen hamna i skräpposten.
-    'mail_from' => 'osa@DINDOMAN.se',
+    'mail_from' => 'osa@bacos.net',
     // Lösenord för att se listan på svar.php
     'admin_key' => 'byt-mig-till-nagot-hemligt',
 ];

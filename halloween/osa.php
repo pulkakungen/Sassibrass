@@ -35,7 +35,16 @@ if ($namn === '' || $kommer === '') {
 $safe = fn(string $s) => preg_match('/^[=+\-@]/', $s) ? "'" . $s : $s;
 
 $row = [date('Y-m-d H:i'), $safe($namn), $kommer, (string)$antal, $safe($kost), $safe($meddelande)];
-$file = __DIR__ . '/data/svar.csv';
+// Skapa datamappen med spärrfil om den inte laddades upp,
+// så att svaren aldrig går att läsa direkt från webben.
+$dir = __DIR__ . '/data';
+if (!is_dir($dir)) {
+    @mkdir($dir, 0755);
+}
+if (!file_exists("$dir/.htaccess")) {
+    @file_put_contents("$dir/.htaccess", "Require all denied\nDeny from all\n");
+}
+$file = "$dir/svar.csv";
 $new = !file_exists($file);
 
 $fh = fopen($file, 'a');

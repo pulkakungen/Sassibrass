@@ -1,0 +1,150 @@
+:root {
+  --bg: #0d0912;
+  --bg2: #1d1226;
+  --card: rgba(29, 18, 38, .78);
+  --line: #3e2a4a;
+  --text: #f3e9dc;
+  --muted: #b9a8c4;
+  --pumpkin: #ff7a1a;
+  --glow: #ffb36b;
+  --slime: #9be15d;
+}
+
+* { box-sizing: border-box; }
+
+html { color-scheme: dark; background: var(--bg); }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Lora", Georgia, serif;
+  font-size: 1.08rem;
+  line-height: 1.65;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse at 50% 120%, #3a1a0a 0%, transparent 60%),
+    linear-gradient(var(--bg2), var(--bg) 70%);
+  overflow-x: hidden;
+}
+
+main {
+  position: relative;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 16px 48px;
+}
+
+/* Himmel med måne och fladdermöss */
+.sky { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.moon {
+  position: absolute; top: 6vh; right: 8vw;
+  width: 110px; height: 110px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff6d8, #f4d58a 60%, #c9a24f);
+  box-shadow: 0 0 60px 20px rgba(255, 220, 140, .18);
+}
+.bat { position: absolute; font-size: 1.6rem; filter: brightness(0); animation: fly 14s linear infinite; }
+.b1 { top: 14vh; animation-delay: 0s; }
+.b2 { top: 24vh; animation-delay: -5s; font-size: 1.1rem; animation-duration: 18s; }
+.b3 { top: 9vh;  animation-delay: -9s; font-size: 1.3rem; animation-duration: 11s; }
+@keyframes fly {
+  0%   { transform: translate(-10vw, 0) rotate(-8deg); }
+  25%  { transform: translate(25vw, -3vh) rotate(6deg); }
+  50%  { transform: translate(55vw, 2vh) rotate(-6deg); }
+  75%  { transform: translate(85vw, -2vh) rotate(8deg); }
+  100% { transform: translate(115vw, 0) rotate(-8deg); }
+}
+
+main > * { position: relative; z-index: 1; }
+
+.hero { text-align: center; padding: 22vh 0 32px; }
+.kicker { margin: 0; color: var(--muted); font-style: italic; letter-spacing: .04em; }
+h1 {
+  font-family: "Creepster", cursive;
+  font-weight: 400;
+  font-size: clamp(3.2rem, 15vw, 6.5rem);
+  line-height: 1;
+  margin: .15em 0;
+  color: var(--pumpkin);
+  text-shadow: 0 0 24px rgba(255, 122, 26, .55), 0 4px 0 #6b2a00;
+  animation: flicker 6s infinite;
+}
+@keyframes flicker {
+  0%, 92%, 100% { opacity: 1; }
+  93% { opacity: .4; } 94% { opacity: 1; } 96% { opacity: .6; }
+}
+.date { margin: 0; font-size: 1.25rem; color: var(--glow); }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 24px 22px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(4px);
+}
+.intro p:first-child { margin-top: 0; }
+.intro p:last-child { margin-bottom: 0; }
+
+h2 {
+  font-family: "Creepster", cursive;
+  font-weight: 400;
+  font-size: 2.4rem;
+  color: var(--slime);
+  margin: 0 0 12px;
+  letter-spacing: .03em;
+}
+
+.facts dl { margin: 0; display: grid; gap: 12px; }
+.facts div { display: grid; grid-template-columns: 90px 1fr; gap: 12px; }
+.facts dt { color: var(--glow); font-weight: 600; }
+.facts dd { margin: 0; }
+
+form { display: grid; gap: 16px; }
+label { display: grid; gap: 6px; font-weight: 600; }
+.opt { font-weight: 400; color: var(--muted); }
+input, textarea {
+  font: inherit;
+  font-weight: 400;
+  color: var(--text);
+  background: #120c18;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  width: 100%;
+}
+input:focus, textarea:focus { outline: 2px solid var(--pumpkin); outline-offset: 1px; }
+
+.choice { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; }
+.choice legend { font-weight: 600; margin-bottom: 6px; }
+.choice label { display: flex; align-items: center; gap: 10px; font-weight: 400; cursor: pointer; }
+.choice input { width: auto; accent-color: var(--pumpkin); }
+
+.if-yes { display: grid; gap: 16px; }
+.if-yes[hidden] { display: none; }
+
+.hp { position: absolute; left: -9999px; }
+
+button {
+  font: inherit;
+  font-weight: 600;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--pumpkin);
+  color: #1a0b00;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255, 122, 26, .35);
+  transition: transform .15s, box-shadow .15s;
+}
+button:hover { transform: translateY(-1px); box-shadow: 0 0 30px rgba(255, 122, 26, .55); }
+button:disabled { opacity: .6; cursor: wait; }
+
+.status { margin: 0; min-height: 1.5em; color: var(--glow); }
+.thanks { font-size: 1.2rem; color: var(--slime); margin: 0; }
+
+footer { text-align: center; font-size: 2rem; padding-top: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bat, h1 { animation: none; }
+  .bat { display: none; }
+}

@@ -35,6 +35,7 @@
 </header>
 
 <main id="top">
+  <div class="embers" aria-hidden="true"></div>
   <section class="hero">
     <div class="hero-text">
       <h1><span>31 oktober</span> Halloween&shy;fest</h1>
@@ -42,100 +43,41 @@
       <a class="btn" href="#osa">Svara här <span aria-hidden="true">→</span></a>
     </div>
 
-    <svg class="scene" viewBox="0 0 520 520" role="img" aria-label="Orange fullmåne med kalt träd, fladdermöss och en lysande pumpa">
-      <defs>
-        <radialGradient id="moon" cx="45%" cy="40%" r="60%">
-          <stop offset="0" stop-color="#ffc469"/>
-          <stop offset=".6" stop-color="#f99a2c"/>
-          <stop offset="1" stop-color="#e8700f"/>
-        </radialGradient>
-        <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
-          <stop offset=".55" stop-color="#000" stop-opacity="0"/>
-          <stop offset="1" stop-color="#000"/>
-        </linearGradient>
-        <radialGradient id="eye">
-          <stop offset="0" stop-color="#fff2a8"/>
-          <stop offset="1" stop-color="#ffa000"/>
-        </radialGradient>
-        <radialGradient id="halo">
-          <stop offset=".75" stop-color="#f7871d" stop-opacity=".35"/>
-          <stop offset="1" stop-color="#f7871d" stop-opacity="0"/>
-        </radialGradient>
-        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="4" result="b"/>
-          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-      </defs>
-
-      <circle cx="270" cy="250" r="260" fill="url(#halo)"/>
-      <circle cx="270" cy="250" r="225" fill="url(#moon)"/>
-      <g fill="#ffd28a" opacity=".45">
-        <path d="M120 170 C140 120 200 130 210 160 C240 130 300 150 290 190 C330 190 340 230 300 240 L130 240 C90 235 95 185 120 170 Z"/>
-        <path d="M300 300 C320 270 370 275 375 300 C400 290 430 310 415 335 L300 335 C280 330 285 305 300 300 Z" opacity=".7"/>
-        <circle cx="360" cy="140" r="18" opacity=".5"/>
-        <circle cx="200" cy="330" r="12" opacity=".5"/>
-      </g>
-
-      <!-- kalt träd -->
-      <g stroke="#000" stroke-linecap="round" fill="none">
-        <path d="M95 520 C100 450 90 400 110 340" stroke-width="22"/>
-        <path d="M108 350 C120 300 115 270 140 230" stroke-width="12"/>
-        <path d="M138 236 C150 210 170 205 185 180" stroke-width="6"/>
-        <path d="M138 236 C130 205 115 195 112 170" stroke-width="5"/>
-        <path d="M184 182 L205 168 M184 182 L190 158" stroke-width="3"/>
-        <path d="M113 172 L100 150 M113 172 L125 152" stroke-width="3"/>
-        <path d="M104 390 C70 370 55 340 30 335" stroke-width="10"/>
-        <path d="M45 338 L25 310 M60 352 L40 362" stroke-width="4"/>
-        <path d="M112 330 C150 320 175 300 205 300" stroke-width="7"/>
-        <path d="M200 300 L225 285 M195 301 L215 318" stroke-width="3"/>
-      </g>
-      <path d="M150 210 c4 -6 10 -6 12 0 c2 -4 6 -4 6 2 l-2 6 l-14 0 Z" fill="#000"/>
-
-      <!-- fladdermöss -->
-      <g fill="#000">
-        <use class="bat f1" href="#bat" x="330" y="90" width="90" height="40"/>
-        <use class="bat f2" href="#bat" x="420" y="170" width="60" height="27"/>
-        <use class="bat f3" href="#bat" x="250" y="40" width="44" height="20"/>
-        <use class="bat f2" href="#bat" x="400" y="290" width="40" height="18"/>
-        <use class="bat f1" href="#bat" x="300" y="200" width="30" height="14"/>
-      </g>
-
-      <rect width="520" height="520" fill="url(#fade)"/>
-
-      <!-- gräs -->
-      <path d="M0 520 L0 470 L10 440 L16 478 L28 430 L34 476 L48 450 L55 480 L70 438 L76 478 L95 455 L100 482 L380 482 L390 446 L398 478 L410 425 L418 476 L432 452 L440 480 L455 432 L462 478 L478 446 L486 480 L500 440 L508 478 L520 455 L520 520 Z" fill="#000"/>
-
-      <!-- pumpa -->
-      <g transform="translate(270 455)">
-        <path d="M-6 -62 C-8 -80 6 -88 16 -84 L12 -76 C4 -78 2 -70 4 -60 Z" fill="#2b3a12"/>
-        <ellipse cx="-50" cy="0" rx="50" ry="58" fill="#3a0f08"/>
-        <ellipse cx="50" cy="0" rx="50" ry="58" fill="#3a0f08"/>
-        <ellipse cx="-22" cy="0" rx="44" ry="62" fill="#4d150b"/>
-        <ellipse cx="22" cy="0" rx="44" ry="62" fill="#4d150b"/>
-        <ellipse cx="0" cy="0" rx="30" ry="63" fill="#5c1b0e"/>
-        <g class="face" fill="url(#eye)" filter="url(#glow)">
-          <path d="M-62 -18 L-20 -30 L-30 4 Z"/>
-          <path d="M62 -18 L20 -30 L30 4 Z"/>
-          <path d="M-8 2 L0 -12 L8 2 Z"/>
-          <path d="M-66 14 L-50 22 L-40 12 L-26 26 L-12 14 L0 28 L12 14 L26 26 L40 12 L50 22 L66 14 C58 52 -58 52 -66 14 Z"/>
-        </g>
-      </g>
-    </svg>
+    <div class="hero-art" aria-roledescription="bildspel">
+      <img class="slide on" src="img/mane.webp" width="900" height="900" alt="Orange fullmåne med kalt träd, fladdermöss och en lysande pumpa" fetchpriority="high">
+      <img class="slide" src="img/pumpa.webp" width="900" height="900" alt="Ilsken lysande pumpa framför en stor orange fullmåne">
+      <button class="arrow prev" aria-label="Föregående bild">‹</button>
+      <button class="arrow next" aria-label="Nästa bild">›</button>
+    </div>
   </section>
 
-  <section class="block intro">
-    <p class="eyebrow">Inbjudan</p>
-    <p>
-      Utklädnad är ett måste. Kommer du i vanliga kläder får du stå utanför,
-      vi vill inte ha några tråkiga spöken.
-    </p>
-    <p>
-      Det blir dödsgoda snacks, drinkar med bett och musik så bra att även de döda
-      vill upp och dansa!
-    </p>
+  <section class="split reveal">
+    <div class="split-text">
+      <p class="eyebrow">Inbjudan</p>
+      <h2 class="accent">Utklädnad är ett måste.</h2>
+      <p>Kommer du i vanliga kläder får du stå utanför, vi vill inte ha några tråkiga spöken.</p>
+      <div class="bar" aria-hidden="true"></div>
+      <ul class="features">
+        <li>
+          <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6c-3 0-4 3-4 5 0 0-12 1-12 15 0 9 7 16 16 16s16-7 16-16C40 12 28 11 28 11c0-2-1-5-4-5z"/><path d="M17 24l5-2-1 5zM31 24l-5-2 1 5zM16 31c4 4 12 4 16 0"/></svg>
+          <div><h3>Dödsgoda snacks</h3><p>Det blir mat som är värd att gå igen för.</p></div>
+        </li>
+        <li>
+          <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 8h28L26 24v12h6v4H16v-4h6V24z"/><path d="M14 12h20"/></svg>
+          <div><h3>Drinkar med bett</h3><p>Glasen fylls tills vampyrerna blir avundsjuka.</p></div>
+        </li>
+        <li>
+          <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M18 36V10l20-4v26"/><circle cx="13" cy="36" r="5"/><circle cx="33" cy="32" r="5"/></svg>
+          <div><h3>Musik för de döda</h3><p>Så bra att även de döda vill upp och dansa.</p></div>
+        </li>
+      </ul>
+    </div>
+    <div class="split-art">
+      <img src="img/fagelskramma.webp" width="600" height="900" alt="Fågelskrämma med lysande pumpahuvud och trasig blå hatt" loading="lazy">
+    </div>
   </section>
 
-  <section class="block">
+  <section class="block reveal">
     <p class="eyebrow">Bra att veta</p>
     <dl class="facts">
       <div><dt>När</dt><dd>Lördag 31 oktober<br>från kl. 19</dd></div>
@@ -145,7 +87,7 @@
     </dl>
   </section>
 
-  <section class="block" id="osa">
+  <section class="block reveal" id="osa">
     <p class="eyebrow">OSA</p>
     <h2>Kommer du?</h2>
     <p class="osa-text">Svara om du kommer, annars sitter vi och väntar på dig tills vi ser ut som mumier.</p>
@@ -187,6 +129,37 @@
 </footer>
 
 <script>
+// svävande glödprickar
+const embers = document.querySelector('.embers');
+for (let i = 0; i < 28; i++) {
+  const e = document.createElement('i');
+  e.style.left = Math.random() * 100 + '%';
+  e.style.top = Math.random() * 100 + '%';
+  e.style.animationDelay = -Math.random() * 12 + 's';
+  e.style.animationDuration = 8 + Math.random() * 10 + 's';
+  embers.appendChild(e);
+}
+
+// bildspel i heron
+const slides = [...document.querySelectorAll('.slide')];
+let cur = 0, timer;
+const show = (i) => {
+  slides[cur].classList.remove('on');
+  cur = (i + slides.length) % slides.length;
+  slides[cur].classList.add('on');
+  clearInterval(timer);
+  timer = setInterval(() => show(cur + 1), 6000);
+};
+document.querySelector('.prev').onclick = () => show(cur - 1);
+document.querySelector('.next').onclick = () => show(cur + 1);
+show(0);
+
+// sektioner glider in när de syns
+const io = new IntersectionObserver((entries) => {
+  for (const en of entries) if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
 const form = document.getElementById('osa-form');
 const status = form.querySelector('.status');
 const yesBox = form.querySelector('.if-yes');

@@ -86,17 +86,6 @@ h1 span { display: block; }
 .slide { transition: opacity 1.2s ease, transform 6s ease-out; }
 .slide:not(.on) { position: absolute; inset: 0; opacity: 0; transform: scale(1.04); }
 .slide.on { transform: scale(1); }
-.arrow {
-  position: absolute; top: 50%; translate: 0 -50%;
-  width: 48px; height: 48px;
-  font: inherit; font-size: 2rem; line-height: 1;
-  color: #fff; background: rgba(0, 0, 0, .4);
-  border: 2px solid var(--orange); cursor: pointer;
-  transition: background .2s, color .2s;
-}
-.arrow:hover, .arrow:focus-visible { background: var(--orange); color: #000; outline: none; }
-.prev { left: 0; }
-.next { right: 0; }
 .hero-art img {
   display: block; width: 100%; height: auto;
   /* tona ut kanterna mot svart så bilden smälter in */

@@ -46,8 +46,6 @@
     <div class="hero-art" aria-roledescription="bildspel">
       <img class="slide on" src="img/mane.webp" width="900" height="900" alt="Orange fullmåne med kalt träd, fladdermöss och en lysande pumpa" fetchpriority="high">
       <img class="slide" src="img/pumpa.webp" width="900" height="900" alt="Ilsken lysande pumpa framför en stor orange fullmåne">
-      <button class="arrow prev" aria-label="Föregående bild">‹</button>
-      <button class="arrow next" aria-label="Nästa bild">›</button>
     </div>
   </section>
 
@@ -143,17 +141,13 @@ for (let i = 0; i < 28; i++) {
 
 // bildspel i heron
 const slides = [...document.querySelectorAll('.slide')];
-let cur = 0, timer;
+let cur = 0;
 const show = (i) => {
   slides[cur].classList.remove('on');
   cur = (i + slides.length) % slides.length;
   slides[cur].classList.add('on');
-  clearInterval(timer);
-  timer = setInterval(() => show(cur + 1), 6000);
 };
-document.querySelector('.prev').onclick = () => show(cur - 1);
-document.querySelector('.next').onclick = () => show(cur + 1);
-show(0);
+setInterval(() => show(cur + 1), 6000);
 
 // sektioner glider in när de syns
 const io = new IntersectionObserver((entries) => {

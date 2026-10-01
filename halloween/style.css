@@ -112,6 +112,8 @@ h1 span { display: block; }
 }
 .intro p:not(.eyebrow) { font-size: 1.2rem; color: #e6e6e6; }
 
+.osa-text { margin: -8px 0 28px; color: #e6e6e6; }
+
 h2 { margin: 0 0 24px; font-weight: 800; font-size: clamp(2rem, 5vw, 2.8rem); line-height: 1.1; }
 
 .facts {

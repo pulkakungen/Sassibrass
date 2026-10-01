@@ -28,14 +28,14 @@ $e = fn($s) => htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 <meta name="robots" content="noindex">
 <title>OSA svar</title>
 <style>
-  body { font-family: system-ui, sans-serif; background: #120c18; color: #f3e9dc; margin: 0; padding: 24px 16px; }
-  h1 { color: #ff7a1a; margin-top: 0; }
+  body { font-family: system-ui, sans-serif; background: #000; color: #f3e9dc; margin: 0; padding: 24px 16px; }
+  h1 { color: #f7871d; margin-top: 0; }
   .wrap { overflow-x: auto; }
   table { border-collapse: collapse; width: 100%; min-width: 600px; }
-  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #3a2a44; vertical-align: top; }
-  th { color: #ffb36b; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #2a2a2a; vertical-align: top; }
+  th { color: #f7871d; }
   .nej { opacity: .55; }
-  a { color: #ffb36b; }
+  a { color: #f7871d; }
 </style>
 </head>
 <body>

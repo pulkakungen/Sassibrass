@@ -77,6 +77,9 @@ h1 {
   letter-spacing: -.01em;
 }
 h1 span { display: block; }
+.kicker { margin: 0 0 10px; color: var(--muted); font-weight: 600; letter-spacing: .06em; }
+.facts a { color: inherit; text-decoration-color: var(--orange); text-underline-offset: 3px; }
+.facts a:hover { color: var(--orange); }
 .lead { margin: 0 0 30px; font-weight: 600; }
 
 .hero-art { position: relative; }
@@ -177,6 +180,7 @@ h2 { margin: 0 0 24px; font-weight: 800; font-size: clamp(2rem, 5vw, 2.8rem); li
 }
 .facts div { border: 2px solid var(--line); padding: 18px 20px; transition: border-color .2s; }
 .facts div:hover { border-color: var(--orange); }
+.facts div:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .facts dt { color: var(--orange); font-weight: 800; font-size: 1.15rem; }
 .facts dd { margin: 4px 0 0; }
 

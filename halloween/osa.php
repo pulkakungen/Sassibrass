@@ -63,7 +63,11 @@ if (!empty($cfg['mail_to'])) {
     $subject = '=?UTF-8?B?' . base64_encode("OSA halloween: $namn ($kommer)") . '?=';
     $body = "Namn: $namn\nKommer: $kommer\nAntal: $antal\nKost: $kost\nMeddelande: $meddelande\n";
     $headers = "From: {$cfg['mail_from']}\r\nContent-Type: text/plain; charset=UTF-8";
-    @mail($cfg['mail_to'], $subject, $body, $headers);
+    // -f sätter kuvertavsändaren, som one.com kräver ska vara ett riktigt konto på domänen
+    $sent = @mail($cfg['mail_to'], $subject, $body, $headers, '-f' . $cfg['mail_from']);
+    if (!$sent) {
+        @file_put_contents("$dir/mail.log", date('Y-m-d H:i') . " misslyckades: $namn\n", FILE_APPEND);
+    }
 }
 
 reply(200, ['ok' => true, 'message' => $kommer === 'ja'

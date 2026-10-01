@@ -80,7 +80,7 @@ h1 span { display: block; }
 .kicker { margin: 0 0 10px; color: var(--muted); font-weight: 600; letter-spacing: .06em; }
 .facts a { color: inherit; text-decoration-color: var(--orange); text-underline-offset: 3px; }
 .facts a:hover { color: var(--orange); }
-.lead { margin: 0 0 30px; font-weight: 600; }
+.lead { margin: 0; font-weight: 600; }
 
 .hero-art { position: relative; }
 .slide { transition: opacity 1.2s ease, transform 6s ease-out; }

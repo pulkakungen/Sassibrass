@@ -363,17 +363,18 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   background: var(--white);
   border-radius: var(--radius-md);
   padding: 10px 14px;
   box-shadow: var(--shadow);
-  gap: 10px;
+  gap: 8px 10px;
   max-width: 640px;
   margin: 0 auto 16px;
   position: relative;
   z-index: 2;
 }
-.pet-mini { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.pet-mini { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 190px; }
 .pet-avatar { width: 52px; height: 52px; flex-shrink: 0; }
 .pet-info { flex: 1; min-width: 0; }
 .pet-name-row {

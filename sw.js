@@ -1,5 +1,5 @@
-const CACHE_NAME = "sassibrass-v3";
-const CORE_FILES = ["./", "./index.html", "./style.css", "./app.js", "./manifest.json"];
+const CACHE_NAME = "sassibrass-v4";
+const CORE_FILES = ["./", "./index.html", "./style.css?v=2", "./app.js?v=2", "./manifest.json"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_FILES)));

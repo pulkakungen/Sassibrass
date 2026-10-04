@@ -226,7 +226,7 @@ button {
 .braindump-card { max-width: 440px; }
 .braindump-textarea {
   width: 100%;
-  min-height: 220px;
+  min-height: 110px;
   border: 2px solid var(--lavender-dark);
   border-radius: var(--radius-md);
   padding: 12px 14px;
@@ -234,10 +234,56 @@ button {
   font-size: 0.95rem;
   color: var(--ink);
   resize: vertical;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   box-sizing: border-box;
 }
 .braindump-textarea:focus { outline: none; border-color: var(--pink-dark); }
+.braindump-entries {
+  max-height: 260px;
+  overflow-y: auto;
+  text-align: left;
+  margin: 4px 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.braindump-entry {
+  background: var(--lavender);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  position: relative;
+}
+.braindump-entry-date {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--pink-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
+}
+.braindump-entry-text {
+  font-size: 0.9rem;
+  color: var(--ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+  padding-right: 22px;
+}
+.braindump-entry-delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.braindump-entry-delete:hover { color: var(--pink-dark); }
+.braindump-empty { color: var(--ink-soft); font-size: 0.85rem; text-align: center; padding: 8px 0; }
 
 /* ---------- topbar ---------- */
 .topbar {

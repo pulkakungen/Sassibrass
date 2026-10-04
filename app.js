@@ -1124,24 +1124,85 @@ function bathePet() {
 }
 
 /* ---------------------------------------------------------
-   Braindump - fri skrivyta, bara sparad lokalt, rör inte spelet
+   Braindump - separata anteckningar, bara sparade lokalt, rör
+   inte spelet. Bara dagar hon faktiskt skriver får ett datum,
+   ingen tom dagboksruta för dagar hon hoppar över.
    --------------------------------------------------------- */
-function loadBraindump() {
+function loadBraindumpEntries() {
   try {
-    return localStorage.getItem(BRAINDUMP_STORAGE_KEY) || "";
+    const raw = localStorage.getItem(BRAINDUMP_STORAGE_KEY);
+    const list = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list) ? list : [];
   } catch (e) {
-    return "";
+    return [];
   }
 }
-function saveBraindump(text) {
+function saveBraindumpEntries(entries) {
   try {
-    localStorage.setItem(BRAINDUMP_STORAGE_KEY, text);
+    localStorage.setItem(BRAINDUMP_STORAGE_KEY, JSON.stringify(entries));
   } catch (e) {
     // t.ex. privat läge utan lagring - inget att göra åt det
   }
 }
+function braindumpDateLabel(iso) {
+  const d = new Date(iso);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  const time = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  if (sameDay(d, today)) return "Idag " + time;
+  if (sameDay(d, yesterday)) return "Igår " + time;
+  return WEEKDAY_NAMES[d.getDay()] + " " + d.getDate() + "/" + (d.getMonth() + 1);
+}
+function renderBraindumpEntries() {
+  const wrap = document.getElementById("braindump-entries");
+  const entries = loadBraindumpEntries();
+  if (!entries.length) {
+    wrap.innerHTML = '<p class="braindump-empty">Inga anteckningar än.</p>';
+    return;
+  }
+  const sorted = [...entries].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  wrap.innerHTML = "";
+  sorted.forEach((entry) => {
+    const card = document.createElement("div");
+    card.className = "braindump-entry";
+    const date = document.createElement("span");
+    date.className = "braindump-entry-date";
+    date.textContent = braindumpDateLabel(entry.createdAt);
+    const text = document.createElement("p");
+    text.className = "braindump-entry-text";
+    text.textContent = entry.text;
+    const del = document.createElement("button");
+    del.className = "braindump-entry-delete";
+    del.title = "Ta bort";
+    del.textContent = "×";
+    del.addEventListener("click", () => deleteBraindumpEntry(entry.id));
+    card.append(date, text, del);
+    wrap.append(card);
+  });
+}
+function saveBraindumpEntry() {
+  const textarea = document.getElementById("braindump-text");
+  const text = textarea.value.trim();
+  if (!text) return;
+  const entries = loadBraindumpEntries();
+  entries.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    createdAt: new Date().toISOString(),
+    text
+  });
+  saveBraindumpEntries(entries);
+  textarea.value = "";
+  renderBraindumpEntries();
+}
+function deleteBraindumpEntry(id) {
+  saveBraindumpEntries(loadBraindumpEntries().filter((e) => e.id !== id));
+  renderBraindumpEntries();
+}
 function showBraindumpModal() {
-  document.getElementById("braindump-text").value = loadBraindump();
+  document.getElementById("braindump-text").value = "";
+  renderBraindumpEntries();
   document.getElementById("braindump-modal").hidden = false;
 }
 function hideBraindumpModal() {
@@ -1247,19 +1308,8 @@ function initAppEvents() {
   });
 
   document.getElementById("braindump-btn").addEventListener("click", showBraindumpModal);
-  document.getElementById("braindump-close-btn").addEventListener("click", () => {
-    saveBraindump(document.getElementById("braindump-text").value);
-    hideBraindumpModal();
-  });
-  document.getElementById("braindump-clear-btn").addEventListener("click", () => {
-    if (confirm("Rensa allt du skrivit?")) {
-      document.getElementById("braindump-text").value = "";
-      saveBraindump("");
-    }
-  });
-  document.getElementById("braindump-text").addEventListener("input", (e) => {
-    saveBraindump(e.target.value);
-  });
+  document.getElementById("braindump-save-btn").addEventListener("click", saveBraindumpEntry);
+  document.getElementById("braindump-close-btn").addEventListener("click", hideBraindumpModal);
 
   document.getElementById("baby-restart-btn").addEventListener("click", () => {
     const babyName = state.babyName;

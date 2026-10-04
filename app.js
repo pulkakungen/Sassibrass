@@ -9,6 +9,7 @@
 const DEMO_MODE = new URLSearchParams(location.search).get("demo") === "1";
 const STORAGE_KEY = DEMO_MODE ? "sassibrass_demo_state_v1" : "sassibrass_state_v1";
 const BRAINDUMP_STORAGE_KEY = DEMO_MODE ? "sassibrass_demo_braindump_v1" : "sassibrass_braindump_v1";
+const TODO_STORAGE_KEY = DEMO_MODE ? "sassibrass_demo_mytodos_v1" : "sassibrass_mytodos_v1";
 
 /* ---------------------------------------------------------
    Push-notiser (Cloudflare Worker)
@@ -1211,6 +1212,83 @@ function hideBraindumpModal() {
 }
 
 /* ---------------------------------------------------------
+   Egna uppgifter - en lista hon styr helt själv, ger varken
+   XP, mat eller kärlek. Bara sparad lokalt, rör inte spelet.
+   --------------------------------------------------------- */
+function loadTodos() {
+  try {
+    const raw = localStorage.getItem(TODO_STORAGE_KEY);
+    const list = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list) ? list : [];
+  } catch (e) {
+    return [];
+  }
+}
+function saveTodos(todos) {
+  try {
+    localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(todos));
+  } catch (e) {
+    // t.ex. privat läge utan lagring - inget att göra åt det
+  }
+}
+function renderTodos() {
+  const wrap = document.getElementById("todo-list");
+  const todos = loadTodos();
+  if (!todos.length) {
+    wrap.innerHTML = '<p class="todo-empty">Inga uppgifter än.</p>';
+    return;
+  }
+  wrap.innerHTML = "";
+  todos.forEach((todo) => {
+    const item = document.createElement("div");
+    item.className = "todo-item" + (todo.done ? " done" : "");
+    const check = document.createElement("button");
+    check.className = "todo-item-check";
+    check.textContent = todo.done ? "✓" : "";
+    check.title = todo.done ? "Markera som ej klar" : "Markera som klar";
+    check.addEventListener("click", () => toggleTodo(todo.id));
+    const text = document.createElement("span");
+    text.className = "todo-item-text";
+    text.textContent = todo.text;
+    const del = document.createElement("button");
+    del.className = "todo-item-delete";
+    del.title = "Ta bort";
+    del.textContent = "×";
+    del.addEventListener("click", () => deleteTodo(todo.id));
+    item.append(check, text, del);
+    wrap.append(item);
+  });
+}
+function addTodo() {
+  const input = document.getElementById("todo-input");
+  const text = input.value.trim();
+  if (!text) return;
+  const todos = loadTodos();
+  todos.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text, done: false });
+  saveTodos(todos);
+  input.value = "";
+  renderTodos();
+}
+function toggleTodo(id) {
+  const todos = loadTodos();
+  const todo = todos.find((t) => t.id === id);
+  if (todo) todo.done = !todo.done;
+  saveTodos(todos);
+  renderTodos();
+}
+function deleteTodo(id) {
+  saveTodos(loadTodos().filter((t) => t.id !== id));
+  renderTodos();
+}
+function showTodoModal() {
+  renderTodos();
+  document.getElementById("todo-modal").hidden = false;
+}
+function hideTodoModal() {
+  document.getElementById("todo-modal").hidden = true;
+}
+
+/* ---------------------------------------------------------
    Start-skärm
    --------------------------------------------------------- */
 function initStartScreen() {
@@ -1311,6 +1389,13 @@ function initAppEvents() {
   document.getElementById("braindump-btn").addEventListener("click", showBraindumpModal);
   document.getElementById("braindump-save-btn").addEventListener("click", saveBraindumpEntry);
   document.getElementById("braindump-close-btn").addEventListener("click", hideBraindumpModal);
+
+  document.getElementById("todo-btn").addEventListener("click", showTodoModal);
+  document.getElementById("todo-add-btn").addEventListener("click", addTodo);
+  document.getElementById("todo-close-btn").addEventListener("click", hideTodoModal);
+  document.getElementById("todo-input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") addTodo();
+  });
 
   document.getElementById("baby-restart-btn").addEventListener("click", () => {
     const babyName = state.babyName;

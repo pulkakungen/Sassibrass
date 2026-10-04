@@ -68,6 +68,7 @@
     <div class="topbar-right">
       <div id="demo-badge" class="demo-badge" hidden>DEMO</div>
       <div class="streak-chip">🔥 <span id="streak-count">0</span></div>
+      <button id="todo-btn" class="icon-btn" title="Mina egna uppgifter">📝</button>
       <button id="braindump-btn" class="icon-btn" title="Braindump - skriv av dig">🧠</button>
       <button id="notif-btn" class="icon-btn" title="Slå på påminnelser">🔔</button>
       <button id="reset-btn" class="icon-btn" title="Börja om (rensar allt)">⚙️</button>
@@ -124,6 +125,23 @@
     <div class="modal-buttons">
       <button id="baby-restart-btn" class="btn-primary">Börja om med bebisen 🍼</button>
       <button id="baby-moveout-btn" class="btn-secondary">Låt bebisen flytta hemifrån 🏡</button>
+    </div>
+  </div>
+</div>
+
+<!-- egna uppgifter (ingen belöning, bara en lista hon styr själv) -->
+<div id="todo-modal" class="modal-overlay" hidden>
+  <div class="modal-card braindump-card">
+    <div class="modal-emoji">📝</div>
+    <h2 class="modal-title">Mina egna uppgifter</h2>
+    <p class="modal-text">En egen lista du styr helt själv. Ger ingen mat eller kärlek, bara en plats att hålla koll.</p>
+    <div class="todo-input-row">
+      <input id="todo-input" type="text" class="todo-input" placeholder="Lägg till en uppgift..." maxlength="80" />
+      <button id="todo-add-btn" class="btn-primary todo-add-btn">Lägg till</button>
+    </div>
+    <div id="todo-list" class="todo-list"></div>
+    <div class="modal-buttons">
+      <button id="todo-close-btn" class="btn-secondary">Stäng</button>
     </div>
   </div>
 </div>

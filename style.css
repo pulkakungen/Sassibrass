@@ -285,6 +285,79 @@ button {
 .braindump-entry-delete:hover { color: var(--pink-dark); }
 .braindump-empty { color: var(--ink-soft); font-size: 0.85rem; text-align: center; padding: 8px 0; }
 
+/* ---------- egna uppgifter ---------- */
+.todo-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.todo-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--lavender-dark);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink);
+  background: #fff;
+}
+.todo-input:focus { outline: none; border-color: var(--pink-dark); }
+.todo-add-btn { flex-shrink: 0; width: auto; padding: 10px 16px; font-size: 0.85rem; }
+.todo-list {
+  max-height: 280px;
+  overflow-y: auto;
+  text-align: left;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--lavender);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+.todo-item-check {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 2px solid var(--pink-dark);
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--pink-dark);
+  padding: 0;
+}
+.todo-item-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9rem;
+  color: var(--ink);
+  word-break: break-word;
+}
+.todo-item.done .todo-item-text { text-decoration: line-through; color: var(--ink-soft); }
+.todo-item.done .todo-item-check { background: var(--pink-dark); color: #fff; }
+.todo-item-delete {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.todo-item-delete:hover { color: var(--pink-dark); }
+.todo-empty { color: var(--ink-soft); font-size: 0.85rem; text-align: center; padding: 8px 0; }
+
 /* ---------- topbar ---------- */
 .topbar {
   display: flex;

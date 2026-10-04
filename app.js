@@ -8,6 +8,7 @@
 // att det syns i den riktiga rapporten eller stjäl push-prenumerationen.
 const DEMO_MODE = new URLSearchParams(location.search).get("demo") === "1";
 const STORAGE_KEY = DEMO_MODE ? "sassibrass_demo_state_v1" : "sassibrass_state_v1";
+const BRAINDUMP_STORAGE_KEY = DEMO_MODE ? "sassibrass_demo_braindump_v1" : "sassibrass_braindump_v1";
 
 /* ---------------------------------------------------------
    Push-notiser (Cloudflare Worker)
@@ -1123,6 +1124,31 @@ function bathePet() {
 }
 
 /* ---------------------------------------------------------
+   Braindump - fri skrivyta, bara sparad lokalt, rör inte spelet
+   --------------------------------------------------------- */
+function loadBraindump() {
+  try {
+    return localStorage.getItem(BRAINDUMP_STORAGE_KEY) || "";
+  } catch (e) {
+    return "";
+  }
+}
+function saveBraindump(text) {
+  try {
+    localStorage.setItem(BRAINDUMP_STORAGE_KEY, text);
+  } catch (e) {
+    // t.ex. privat läge utan lagring - inget att göra åt det
+  }
+}
+function showBraindumpModal() {
+  document.getElementById("braindump-text").value = loadBraindump();
+  document.getElementById("braindump-modal").hidden = false;
+}
+function hideBraindumpModal() {
+  document.getElementById("braindump-modal").hidden = true;
+}
+
+/* ---------------------------------------------------------
    Start-skärm
    --------------------------------------------------------- */
 function initStartScreen() {
@@ -1218,6 +1244,21 @@ function initAppEvents() {
       localStorage.removeItem(STORAGE_KEY);
       location.reload();
     }
+  });
+
+  document.getElementById("braindump-btn").addEventListener("click", showBraindumpModal);
+  document.getElementById("braindump-close-btn").addEventListener("click", () => {
+    saveBraindump(document.getElementById("braindump-text").value);
+    hideBraindumpModal();
+  });
+  document.getElementById("braindump-clear-btn").addEventListener("click", () => {
+    if (confirm("Rensa allt du skrivit?")) {
+      document.getElementById("braindump-text").value = "";
+      saveBraindump("");
+    }
+  });
+  document.getElementById("braindump-text").addEventListener("input", (e) => {
+    saveBraindump(e.target.value);
   });
 
   document.getElementById("baby-restart-btn").addEventListener("click", () => {

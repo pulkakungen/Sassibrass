@@ -68,6 +68,7 @@
     <div class="topbar-right">
       <div id="demo-badge" class="demo-badge" hidden>DEMO</div>
       <div class="streak-chip">🔥 <span id="streak-count">0</span></div>
+      <button id="braindump-btn" class="icon-btn" title="Braindump - skriv av dig">🧠</button>
       <button id="notif-btn" class="icon-btn" title="Slå på påminnelser">🔔</button>
       <button id="reset-btn" class="icon-btn" title="Börja om (rensar allt)">⚙️</button>
     </div>
@@ -123,6 +124,20 @@
     <div class="modal-buttons">
       <button id="baby-restart-btn" class="btn-primary">Börja om med bebisen 🍼</button>
       <button id="baby-moveout-btn" class="btn-secondary">Låt bebisen flytta hemifrån 🏡</button>
+    </div>
+  </div>
+</div>
+
+<!-- braindump -->
+<div id="braindump-modal" class="modal-overlay" hidden>
+  <div class="modal-card braindump-card">
+    <div class="modal-emoji">🧠</div>
+    <h2 class="modal-title">Braindump</h2>
+    <p class="modal-text">Skriv av dig. Ingen läser det här, det sparas bara på din egen telefon.</p>
+    <textarea id="braindump-text" class="braindump-textarea" placeholder="Skriv vad du vill... tankar, oro, idéer, vad som helst 💭"></textarea>
+    <div class="modal-buttons">
+      <button id="braindump-close-btn" class="btn-primary">Klar ✨</button>
+      <button id="braindump-clear-btn" class="btn-secondary">Rensa allt</button>
     </div>
   </div>
 </div>

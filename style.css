@@ -223,6 +223,21 @@ button {
   flex-direction: column;
   gap: 10px;
 }
+.braindump-card { max-width: 440px; }
+.braindump-textarea {
+  width: 100%;
+  min-height: 220px;
+  border: 2px solid var(--lavender-dark);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  color: var(--ink);
+  resize: vertical;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+.braindump-textarea:focus { outline: none; border-color: var(--pink-dark); }
 
 /* ---------- topbar ---------- */
 .topbar {

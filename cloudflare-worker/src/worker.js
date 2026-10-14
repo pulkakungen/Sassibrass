@@ -598,7 +598,7 @@ export default {
         id: "extra-" + dateStr + "-" + Math.random().toString(36).slice(2, 8),
         emoji: (body.emoji || "⭐").slice(0, 4),
         text: text.slice(0, 80),
-        reward: ["food", "love", "both"].includes(body.gives) ? body.gives : "both",
+        reward: ["food", "love", "both", "none"].includes(body.gives) ? body.gives : "both",
         section: body.section || "hemma",
         date: dateStr
       };

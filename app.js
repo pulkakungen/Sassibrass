@@ -1041,7 +1041,7 @@ function completeTask(taskId, sectionId) {
 
     const section = TASK_SECTIONS.find((s) => s.id === sectionId);
     const task = (section && section.tasks.find((t) => t.id === taskId)) || extraTasks.find((t) => t.id === taskId);
-    const rewardType = task && task.reward === "food" ? "food" : task && task.reward === "both" ? "both" : "love";
+    const rewardType = task && ["food", "love", "both", "none"].includes(task.reward) ? task.reward : "love";
     if (rewardType === "food" || rewardType === "both") {
       state.food = clamp(state.food + FOOD_PER_TASK, 0, MAX_FOOD);
     }
@@ -1052,7 +1052,7 @@ function completeTask(taskId, sectionId) {
 
     showToast(pick(TASK_MESSAGES));
     burstConfetti(14);
-    flashMood(rewardType === "food" ? "yum" : "love", 900);
+    flashMood(rewardType === "food" ? "yum" : rewardType === "none" ? "happy" : "love", 900);
     if (rewardType === "both") {
       setTimeout(() => flashMood("yum", 900), 950);
     }

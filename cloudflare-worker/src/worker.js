@@ -293,6 +293,7 @@ async function buildSummary(env, url, request) {
     remindersSentToday: sentRaw ? JSON.parse(sentRaw) : [],
     dead: !!(state && state.dead),
     deadAfterDays: state && typeof state.deadAfterDays === "number" ? state.deadAfterDays : 0,
+    schedule: state && Array.isArray(state.schedule) ? state.schedule : null,
     supportsExtra: true,
     extra: extras,
     affirmation: today && today.affirmationSent ? today.affirmationSent : null,
@@ -549,6 +550,7 @@ export default {
         xpToNext: typeof body.xpToNext === "number" ? body.xpToNext : null,
         streak: typeof body.streak === "number" ? body.streak : null,
         petName: typeof body.petName === "string" ? body.petName : null,
+        schedule: Array.isArray(body.schedule) ? body.schedule.slice(0, 120) : null,
         dead: !!body.dead,
         deadAfterDays: typeof body.deadAfterDays === "number" ? body.deadAfterDays : 0,
         lastNagAt: null

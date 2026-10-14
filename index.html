@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=2" />
+<link rel="stylesheet" href="style.css?v=3" />
 </head>
 <body>
 
@@ -37,6 +37,26 @@
     <input id="pet-name-input" class="name-input" type="text" maxlength="16" placeholder="Ge ditt djur ett namn ✨" />
 
     <button id="start-btn" class="btn-primary" disabled>Börja äventyret! 🌊</button>
+  </div>
+</section>
+
+<!-- ================= GRAVSTEN ================= -->
+<section id="screen-grave" class="screen">
+  <div class="card grave-card">
+    <svg class="grave-art" viewBox="0 0 180 180" aria-hidden="true">
+      <path d="M8 152 q82 -26 164 0 v22 H8 z" class="g-ground" />
+      <path d="M58 152 V74 a32 32 0 0 1 64 0 v78 z" class="g-stone" />
+      <path d="M90 92 v34 M74 104 h32" class="g-mark" />
+      <path d="M34 152 q6 -14 12 -2 q5 -11 10 1" class="g-grass" />
+      <path d="M126 152 q6 -13 12 -1 q5 -10 10 2" class="g-grass" />
+      <path d="M142 134 v16" class="g-grass" />
+      <circle cx="142" cy="130" r="6" class="g-flower" />
+    </svg>
+    <h1 class="grave-title">Här vilar <span id="grave-name">ditt djur</span></h1>
+    <p id="grave-epitaph" class="grave-epitaph"></p>
+    <p class="grave-note">Två veckor utan dig blev för många. Hen orkade inte vänta längre.</p>
+    <p class="grave-note soft">Du får börja om från början, med ett nytt djur och ett nytt namn. Dina egna listor ligger kvar.</p>
+    <button id="grave-restart" class="btn-primary">Börja om</button>
   </div>
 </section>
 

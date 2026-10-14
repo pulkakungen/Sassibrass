@@ -291,6 +291,8 @@ async function buildSummary(env, url, request) {
     totalToday: tasks.length,
     tasks,
     remindersSentToday: sentRaw ? JSON.parse(sentRaw) : [],
+    dead: !!(state && state.dead),
+    deadAfterDays: state && typeof state.deadAfterDays === "number" ? state.deadAfterDays : 0,
     supportsExtra: true,
     extra: extras,
     affirmation: today && today.affirmationSent ? today.affirmationSent : null,
@@ -390,6 +392,11 @@ async function runScheduledChecks(env) {
 
   const hasSub = !!(await env.PUSH_KV.get(SUBSCRIPTION_KEY));
   if (!hasSub) return;
+
+  // Ett dött djur hör inte av sig. Gravstenen ligger kvar i appen tills
+  // man börjar om, och då synkar appen igen med dead satt till false.
+  const doodRaw = await env.PUSH_KV.get(STATE_KEY);
+  if (doodRaw && JSON.parse(doodRaw).dead) return;
 
   // --- Fasta påminnelser ---
   const sentKey = `reminders:${dateStr}`;
@@ -542,6 +549,8 @@ export default {
         xpToNext: typeof body.xpToNext === "number" ? body.xpToNext : null,
         streak: typeof body.streak === "number" ? body.streak : null,
         petName: typeof body.petName === "string" ? body.petName : null,
+        dead: !!body.dead,
+        deadAfterDays: typeof body.deadAfterDays === "number" ? body.deadAfterDays : 0,
         lastNagAt: null
       };
       // behåll lastNagAt om det redan finns, så vi inte nollställer tjat-spärren vid varje synk

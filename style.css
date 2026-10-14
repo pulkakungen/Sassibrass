@@ -850,3 +850,46 @@ button {
   .pet-choice { width: 45%; }
   .pet-avatar-big { width: 120px; height: 120px; }
 }
+
+/* ---------- gravsten ---------- */
+#screen-grave.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.grave-card {
+  text-align: center;
+  max-width: 420px;
+}
+.grave-art {
+  width: 160px;
+  height: 160px;
+  display: block;
+  margin: 0 auto 4px;
+}
+.grave-art .g-ground { fill: var(--mint); }
+.grave-art .g-stone { fill: #d7cfe0; stroke: #b9aecb; stroke-width: 3; }
+.grave-art .g-mark { stroke: #9b8fb0; stroke-width: 6; stroke-linecap: round; fill: none; }
+.grave-art .g-grass { stroke: var(--mint-dark); stroke-width: 4; stroke-linecap: round; fill: none; }
+.grave-art .g-flower { fill: var(--pink-dark); }
+.grave-title {
+  font-family: "Baloo 2", cursive;
+  font-size: 1.5rem;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+.grave-epitaph {
+  color: var(--ink-soft);
+  font-weight: 700;
+  margin: 0 0 14px;
+}
+.grave-note {
+  color: var(--ink-soft);
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+.grave-note.soft {
+  font-size: 0.92rem;
+  opacity: 0.85;
+  margin-bottom: 20px;
+}

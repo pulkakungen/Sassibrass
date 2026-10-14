@@ -92,7 +92,9 @@ function syncStateToWorker() {
       xp: state.xp,
       xpToNext: xpToNext(state.level),
       streak: state.streak,
-      petName: state.petName
+      petName: state.petName,
+      dead: !!state.dead,
+      deadAfterDays: state.deadAfterDays || 0
     })
   }).catch(() => {});
 }
@@ -474,7 +476,10 @@ function defaultState() {
     totalCompleted: 0,
     sectionsCollapsed: {},
     levelResetV1Applied: false,
-    levelBumpV2Applied: false
+    levelBumpV2Applied: false,
+    dead: false,
+    deadOn: null,
+    deadAfterDays: 0
   };
 }
 
@@ -1433,10 +1438,65 @@ function initAppEvents() {
 }
 
 /* ---------------------------------------------------------
+   Fjorton dagar utan ett enda besök och djuret dör. Gravstenen
+   ligger kvar varje gång appen öppnas, tills man trycker på
+   knappen och börjar om från början.
+   --------------------------------------------------------- */
+const DEATH_AFTER_DAYS = 14;
+
+function daysBetweenDates(fromStr, toStr) {
+  if (!fromStr || !toStr) return 0;
+  return Math.round((new Date(toStr + "T00:00:00") - new Date(fromStr + "T00:00:00")) / 86400000);
+}
+
+function daysAway() {
+  return daysBetweenDates(state.lastActiveDate, todayStr());
+}
+
+function checkPetDeath() {
+  if (state.dead) return true;
+  if (!state.petType || !state.lastActiveDate) return false;
+  if (daysAway() < DEATH_AFTER_DAYS) return false;
+  state.dead = true;
+  state.deadOn = todayStr();
+  state.deadAfterDays = daysAway();
+  saveState();
+  return true;
+}
+
+function showGraveScreen() {
+  document.querySelectorAll(".screen").forEach((el) => el.classList.remove("active"));
+  document.getElementById("screen-grave").classList.add("active");
+  document.getElementById("grave-name").textContent = state.petName || "ditt djur";
+
+  const delar = [];
+  if (state.level) delar.push("Nivå " + state.level);
+  if (state.streak) delar.push("längsta streak " + state.streak);
+  if (state.totalCompleted) delar.push(state.totalCompleted + " avbockade uppgifter");
+  delar.push("ensam i " + state.deadAfterDays + " dagar");
+  document.getElementById("grave-epitaph").textContent = delar.join(" · ");
+
+  document.getElementById("grave-restart").addEventListener(
+    "click",
+    () => {
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    },
+    { once: true }
+  );
+}
+
+/* ---------------------------------------------------------
    Init
    --------------------------------------------------------- */
 function init() {
   loadExtras();
+  if (checkPetDeath()) {
+    showGraveScreen();
+    registerServiceWorker();
+    syncStateToWorker(); // så föräldrapanelen ser gravstenen den också
+    return;
+  }
   handleDailyReset();
   applyStatDecay();
   initAppEvents();

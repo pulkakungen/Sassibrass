@@ -1,4 +1,4 @@
-const CACHE_NAME = "sassibrass-v4";
+const CACHE_NAME = "sassibrass-v5";
 const CORE_FILES = ["./", "./index.html", "./style.css?v=2", "./app.js?v=2", "./manifest.json"];
 
 self.addEventListener("install", (event) => {

@@ -362,6 +362,17 @@ async function fetchExtras() {
     if (!Array.isArray(data.tasks)) return;
     extraTasks = data.tasks;
     localStorage.setItem(EXTRA_STORAGE, JSON.stringify(extraTasks));
+
+    // Workern räknar tysta dagar och vinner över telefonens egen räknare,
+    // som nollställs så fort appen öppnas.
+    if (data.dead && !state.dead) {
+      state.dead = true;
+      state.deadOn = todayStr();
+      state.deadAfterDays = data.deadAfterDays || DEATH_AFTER_DAYS;
+      saveState();
+      showGraveScreen();
+      return;
+    }
     if (state.petType) {
       renderTaskSections();
       updateStatsUI();
@@ -1498,6 +1509,13 @@ function daysAway() {
 }
 
 function checkPetDeath() {
+  // Testväg för föräldern: ?demo=1&dead=1 visar gravstenen direkt, utan att
+  // röra barnets riktiga sparning. Demoläget har en egen.
+  if (DEMO_MODE && new URLSearchParams(location.search).get("dead") === "1") {
+    state.dead = true;
+    state.deadAfterDays = state.deadAfterDays || DEATH_AFTER_DAYS;
+    return true;
+  }
   if (state.dead) return true;
   if (!state.petType || !state.lastActiveDate) return false;
   if (daysAway() < DEATH_AFTER_DAYS) return false;
@@ -1524,7 +1542,10 @@ function showGraveScreen() {
     "click",
     () => {
       localStorage.removeItem(STORAGE_KEY);
-      location.reload();
+      // workern latchar dödsfallet, så den måste få veta att ett nytt liv börjar
+      fetch(PUSH_WORKER_URL + "/revive", { method: "POST" })
+        .catch(() => {})
+        .finally(() => location.reload());
     },
     { once: true }
   );
@@ -1538,6 +1559,7 @@ function init() {
   if (checkPetDeath()) {
     showGraveScreen();
     registerServiceWorker();
+  syncStateToWorker(); // så panelen ser när appen senast var öppen, inte bara när något bockades av
     syncStateToWorker(); // så föräldrapanelen ser gravstenen den också
     return;
   }

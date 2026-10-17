@@ -274,7 +274,6 @@ const TASK_SECTIONS = [
       { id: "tvatta-ansikte-kvall", emoji: "💦", text: "Tvätta ansiktet", reward: "love" },
       { id: "tander-kvall", emoji: "🪥", text: "Borsta tänderna", reward: "food" },
       { id: "klader-imorgon", emoji: "🧦", text: "Lägg fram kläder till imorgon", reward: "love" },
-      { id: "padda-laddning", emoji: "🔌", text: "Sätt paddan på laddning", reward: "food" },
       { id: "tandborste-laddning", emoji: "🪥", text: "Ladda eltandborsten", parity: "even", reward: "love" },
       { id: "planera-veckan", emoji: "🗒️", text: "Planera din kommande vecka", days: [DAG_SON], reward: "food" },
       { id: "meditera", emoji: "🧘‍♀️", text: "Meditera", reward: "love" },

@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=3" />
+<link rel="stylesheet" href="style.css?v=4" />
 </head>
 <body>
 
@@ -183,6 +183,23 @@
   </div>
 </div>
 
-<script src="app.js?v=2"></script>
+<!-- meditera -->
+<div id="meditate-modal" class="modal-overlay" hidden>
+  <div class="modal-card meditate-card">
+    <h2 class="modal-title">Andningsstund 🧘</h2>
+    <div id="meditate-pet-avatar" class="meditate-pet-avatar"></div>
+    <div id="meditate-breath-circle" class="meditate-breath-circle">
+      <span id="meditate-breath-label">Andas in...</span>
+    </div>
+    <p id="meditate-tip" class="modal-text meditate-tip"></p>
+    <div class="modal-buttons">
+      <button id="meditate-newtip-btn" class="btn-secondary">Nytt tips</button>
+      <button id="meditate-done-btn" class="btn-primary">Klart, jag mediterade ✓</button>
+      <button id="meditate-close-btn" class="btn-secondary">Stäng</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js?v=3"></script>
 </body>
 </html>

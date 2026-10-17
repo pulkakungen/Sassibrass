@@ -471,6 +471,15 @@ const BATH_MESSAGES = [
   "Jag simmar av glädje! 🌊✨"
 ];
 
+const MEDITATION_TIPS = [
+  "Andas in genom näsan i 4 sekunder, håll andan i 4, andas sedan ut genom munnen i 4. Upprepa 5 gånger.",
+  "Blunda och lyssna efter tre olika ljud du hör runt omkring dig.",
+  "Lägg en hand på magen. Känn den gå upp när du andas in, och ner när du andas ut.",
+  "Spänn axlarna upp mot öronen, håll i 3 sekunder, släpp och känn hur de blir tunga och avslappnade.",
+  "Tänk på något som gjorde dig glad idag, och le lite extra åt det.",
+  "Föreställ dig att du flyter lugnt i havet, precis som ditt djur."
+];
+
 const GREETING_MORNING = [
   "God morgon! Redo för en superdag? ☀️",
   "Vakna vakna! Idag blir grymt! 🌅"
@@ -1184,6 +1193,51 @@ function bathePet() {
 }
 
 /* ---------------------------------------------------------
+   Meditera - öppnas när hon trycker på uppgiften, visar djuret
+   lugnt, en andningsguide och ett slumpat tips. "Klart"-knappen
+   bockar av uppgiften precis som vanligt.
+   --------------------------------------------------------- */
+let meditateBreathTimer = null;
+
+function startBreathingGuide() {
+  const circle = document.getElementById("meditate-breath-circle");
+  const label = document.getElementById("meditate-breath-label");
+  let breatheIn = true;
+  const tick = () => {
+    label.textContent = breatheIn ? "Andas in..." : "Andas ut...";
+    circle.classList.toggle("breathe-in", breatheIn);
+    circle.classList.toggle("breathe-out", !breatheIn);
+    breatheIn = !breatheIn;
+  };
+  tick();
+  meditateBreathTimer = setInterval(tick, 4000);
+}
+function stopBreathingGuide() {
+  clearInterval(meditateBreathTimer);
+  meditateBreathTimer = null;
+}
+
+function openMeditateModal() {
+  document.getElementById("meditate-pet-avatar").innerHTML = petSVG(state.petType, "love", state.level);
+  document.getElementById("meditate-tip").textContent = pick(MEDITATION_TIPS);
+  document.getElementById("meditate-modal").hidden = false;
+  startBreathingGuide();
+}
+function closeMeditateModal() {
+  document.getElementById("meditate-modal").hidden = true;
+  stopBreathingGuide();
+}
+function newMeditateTip() {
+  document.getElementById("meditate-tip").textContent = pick(MEDITATION_TIPS);
+}
+function finishMeditation() {
+  if (!state.completedToday["meditera"]) {
+    completeTask("meditera", "kvall");
+  }
+  closeMeditateModal();
+}
+
+/* ---------------------------------------------------------
    Braindump - separata anteckningar, bara sparade lokalt, rör
    inte spelet. Bara dagar hon faktiskt skriver får ett datum,
    ingen tom dagboksruta för dagar hon hoppar över.
@@ -1406,6 +1460,10 @@ function initAppEvents() {
     }
     const item = e.target.closest(".task-item");
     if (item) {
+      if (item.dataset.task === "meditera" && !state.completedToday["meditera"]) {
+        openMeditateModal();
+        return;
+      }
       completeTask(item.dataset.task, item.dataset.section);
     }
   });
@@ -1413,6 +1471,9 @@ function initAppEvents() {
   document.getElementById("feed-btn").addEventListener("click", feedPet);
   document.getElementById("love-btn").addEventListener("click", lovePet);
   document.getElementById("bath-btn").addEventListener("click", bathePet);
+  document.getElementById("meditate-close-btn").addEventListener("click", closeMeditateModal);
+  document.getElementById("meditate-newtip-btn").addEventListener("click", newMeditateTip);
+  document.getElementById("meditate-done-btn").addEventListener("click", finishMeditation);
 
   document.getElementById("notif-btn").addEventListener("click", async () => {
     if (DEMO_MODE) {

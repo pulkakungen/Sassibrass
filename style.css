@@ -224,6 +224,33 @@ button {
   gap: 10px;
 }
 .braindump-card { max-width: 440px; }
+.meditate-card { max-width: 360px; }
+.meditate-pet-avatar {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 14px;
+  filter: drop-shadow(0 10px 14px rgba(100,150,200,0.25));
+}
+.meditate-breath-circle {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--lavender), var(--lavender-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-family: 'Baloo 2', cursive;
+  font-size: 0.95rem;
+  text-align: center;
+  transform: scale(0.85);
+  transition: transform 4s ease-in-out;
+}
+.meditate-breath-circle.breathe-in { transform: scale(1.25); }
+.meditate-breath-circle.breathe-out { transform: scale(0.85); }
+.meditate-tip { font-weight: 600; }
 .braindump-textarea {
   width: 100%;
   min-height: 110px;

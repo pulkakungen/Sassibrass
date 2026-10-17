@@ -1559,8 +1559,7 @@ function init() {
   if (checkPetDeath()) {
     showGraveScreen();
     registerServiceWorker();
-  syncStateToWorker(); // så panelen ser när appen senast var öppen, inte bara när något bockades av
-    syncStateToWorker(); // så föräldrapanelen ser gravstenen den också
+    syncStateToWorker(); // så föräldrapanelen ser gravstenen också
     return;
   }
   handleDailyReset();
@@ -1577,6 +1576,7 @@ function init() {
   if (state.petType) {
     resolvePendingLevelUps(); // säkerhetskontroll: fångar upp om XP-baren blev "full" utan att levla
     showAppScreen();
+    syncStateToWorker(); // så panelen ser dagens uppgiftslista direkt, inte bara efter en avbockning
   } else {
     document.getElementById("screen-start").classList.add("active");
     initStartScreen();

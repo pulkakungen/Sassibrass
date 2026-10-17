@@ -254,7 +254,8 @@ async function buildSummary(env, url, request) {
       date: stockholmParts(d).dateStr,
       done: recTasks.filter((t) => t.done).length,
       total: recTasks.length,
-      allDone: !!(rec && rec.allDoneToday)
+      allDone: !!(rec && rec.allDoneToday),
+      tasks: recTasks.map((t) => ({ id: t.id, text: t.text, done: !!t.done }))
     });
   }
 

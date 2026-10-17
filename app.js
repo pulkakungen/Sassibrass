@@ -174,7 +174,7 @@ const TASK_SECTIONS = [
       { id: "drick-vatten", emoji: "💧", text: "Drick vatten", reward: "food" },
       { id: "drick-kreatin", emoji: "🥤", text: "Drick kreatin", reward: "food" },
       { id: "tander-morgon", emoji: "🪥", text: "Borsta tänderna", reward: "love" },
-      { id: "matsack", emoji: "🍱", text: "Packa snacks/bars/frukt", reward: "food" }
+      { id: "matsack", emoji: "🍱", text: "Packa snacks/bars/frukt", days: SKOLDAGAR, reward: "food" }
     ]
   },
   {
@@ -184,7 +184,7 @@ const TASK_SECTIONS = [
     tasks: [
       { id: "padda-bocker", emoji: "💻", text: "Ta med padda och böcker", days: SKOLDAGAR, reward: "love" },
       { id: "gympaklader", emoji: "👟", text: "Ta med gympakläder", days: [DAG_TIS, DAG_ONS, DAG_TORS], reward: "food" },
-      { id: "schema", emoji: "🗓️", text: "Kolla schemat", reward: "food" },
+      { id: "schema", emoji: "🗓️", text: "Kolla schemat", days: [DAG_SON, DAG_MAN, DAG_TIS, DAG_ONS, DAG_TORS, DAG_FRE], reward: "food" },
       { id: "till-skolan", emoji: "🚌", text: "Ta dig till skolan i tid", days: SKOLDAGAR, reward: "love" }
     ]
   },
@@ -238,7 +238,6 @@ const TASK_SECTIONS = [
         reward: "love",
         schedule: [{ day: DAG_SON, weekParity: "odd" }]
       },
-      { id: "mellanmal", emoji: "🍎", text: "Ät ett mellanmål", reward: "food" },
       { id: "tvatten", emoji: "🧺", text: "Gå ner med tvätten", days: [DAG_TIS, DAG_LOR], reward: "love" },
       { id: "snygga-rum", emoji: "🧹", text: "Snygga upp rummet", reward: "food" },
       { id: "dammsuga", emoji: "🧺", text: "Dammsuga", days: [DAG_LOR], reward: "love" },
@@ -253,7 +252,7 @@ const TASK_SECTIONS = [
     emoji: "👭",
     title: "Socialt & läxor",
     tasks: [
-      { id: "laxa", emoji: "📖", text: "Gör läxan", days: [DAG_MAN, DAG_TIS, DAG_ONS, DAG_TORS, DAG_LOR, DAG_SON], reward: "food" },
+      { id: "laxa", emoji: "📖", text: "Gör läxan", days: [DAG_MAN, DAG_TIS, DAG_ONS, DAG_TORS, DAG_SON], reward: "food" },
       { id: "kompis", emoji: "💬", text: "Träffa eller prata med en kompis", reward: "love" },
       { id: "piano", emoji: "🎹", text: "Träna piano 10 minuter", days: [DAG_MAN, DAG_ONS], reward: "food" }
     ]

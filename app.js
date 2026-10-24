@@ -770,6 +770,23 @@ function isWinterMonth(month) {
   return month <= 2 || month >= 10;
 }
 
+// Halloween-skin: hela oktober får djuren ett spöklakan över sig.
+function isHalloweenSeason() {
+  return new Date().getMonth() + 1 === 10;
+}
+
+// Vitt lakan med urklippta hål för ögon och nos/nos, ritat som en enda SVG-path
+// med evenodd så att hålen blir genomskinliga och djurets bild syns igenom.
+const HALLOWEEN_SHEET_SVG = `
+  <svg class="halloween-sheet" viewBox="0 0 100 100" aria-hidden="true">
+    <path fill-rule="evenodd" fill="#fdfcff" stroke="#c9b8e8" stroke-width="2"
+      d="M20,50 C20,25 33,10 50,10 C67,10 80,25 80,50 L80,85 Q72.5,98 65,85 Q57.5,98 50,85 Q42.5,98 35,85 Q27.5,98 20,85 Z
+         M31,42 A7,9 0 1 0 45,42 A7,9 0 1 0 31,42 Z
+         M55,42 A7,9 0 1 0 69,42 A7,9 0 1 0 55,42 Z
+         M45,58 A5,6 0 1 0 55,58 A5,6 0 1 0 45,58 Z" />
+  </svg>
+`;
+
 const SHARK_STICKERS = {
   love: "icons/shark/love.png",
   yum: "icons/shark/yum.png",
@@ -819,10 +836,12 @@ function renderAnimalSticker(stickers, happyImage, altText, prefix, mood, level)
 
   const earned = ACCESSORY_TIERS.filter((t) => level >= t.level);
   const badge = earned.length ? ACCESSORY_EMOJI[earned[earned.length - 1].label] || "" : "";
+  const ghostSheet = isHalloweenSeason() ? HALLOWEEN_SHEET_SVG : "";
 
   return `
     <div class="${prefix}-sticker-wrap">
       <img src="${src}" alt="${altText}" class="${prefix}-sticker-img" />
+      ${ghostSheet}
       ${badge ? `<span class="${prefix}-accessory-badge">${badge}</span>` : ""}
     </div>
   `;

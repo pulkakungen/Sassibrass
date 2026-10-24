@@ -545,6 +545,19 @@ button {
   0%, 100% { transform: translateY(0) rotate(-1deg); }
   50% { transform: translateY(-10px) rotate(1deg); }
 }
+.halloween-sheet {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.18));
+  animation: ghost-sway 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes ghost-sway {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
 .seal-sticker-wrap {
   position: relative;
   width: 100%;

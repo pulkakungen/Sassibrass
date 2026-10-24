@@ -763,7 +763,7 @@ const SEAL_STICKERS = {
   ],
   // Snöbilden sparas till vintern (okt-feb) istället för att synas året runt.
   winterPool: ["icons/seal/happy-13.png"],
-  halloweenPool: [] // fylls i när riktiga illustrerade spökbilder laddats upp, t.ex. icons/seal/halloween-1.png
+  halloweenPool: ["icons/seal/halloween-1.png"]
 };
 
 function isWinterMonth(month) {
@@ -771,9 +771,11 @@ function isWinterMonth(month) {
   return month <= 2 || month >= 10;
 }
 
-// Halloween-skin: hela oktober, om det finns egna spöklakan-stickers uppladdade.
+// Halloween-skin: hela oktober t.o.m. 1 november, sen tillbaka till vanligt utseende.
 function isHalloweenSeason() {
-  return new Date().getMonth() + 1 === 10;
+  const d = new Date();
+  const month = d.getMonth() + 1;
+  return month === 10 || (month === 11 && d.getDate() === 1);
 }
 
 const SHARK_STICKERS = {
@@ -781,7 +783,7 @@ const SHARK_STICKERS = {
   yum: "icons/shark/yum.png",
   sad: "icons/shark/sad.png",
   happyPool: Array.from({ length: 25 }, (_, i) => `icons/shark/happy-${i + 1}.png`),
-  halloweenPool: [] // fylls i när riktiga illustrerade spökbilder laddats upp, t.ex. icons/shark/halloween-1.png
+  halloweenPool: ["icons/shark/halloween-1.png"]
 };
 
 const ACCESSORY_EMOJI = {

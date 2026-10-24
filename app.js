@@ -762,7 +762,8 @@ const SEAL_STICKERS = {
     "icons/seal/happy-14.png"
   ],
   // Snöbilden sparas till vintern (okt-feb) istället för att synas året runt.
-  winterPool: ["icons/seal/happy-13.png"]
+  winterPool: ["icons/seal/happy-13.png"],
+  halloweenPool: [] // fylls i när riktiga illustrerade spökbilder laddats upp, t.ex. icons/seal/halloween-1.png
 };
 
 function isWinterMonth(month) {
@@ -770,28 +771,17 @@ function isWinterMonth(month) {
   return month <= 2 || month >= 10;
 }
 
-// Halloween-skin: hela oktober får djuren ett spöklakan över sig.
+// Halloween-skin: hela oktober, om det finns egna spöklakan-stickers uppladdade.
 function isHalloweenSeason() {
   return new Date().getMonth() + 1 === 10;
 }
-
-// Vitt lakan med urklippta hål för ögon och nos/nos, ritat som en enda SVG-path
-// med evenodd så att hålen blir genomskinliga och djurets bild syns igenom.
-const HALLOWEEN_SHEET_SVG = `
-  <svg class="halloween-sheet" viewBox="0 0 100 100" aria-hidden="true">
-    <path fill-rule="evenodd" fill="#fdfcff" stroke="#c9b8e8" stroke-width="2"
-      d="M20,50 C20,25 33,10 50,10 C67,10 80,25 80,50 L80,85 Q72.5,98 65,85 Q57.5,98 50,85 Q42.5,98 35,85 Q27.5,98 20,85 Z
-         M31,42 A7,9 0 1 0 45,42 A7,9 0 1 0 31,42 Z
-         M55,42 A7,9 0 1 0 69,42 A7,9 0 1 0 55,42 Z
-         M45,58 A5,6 0 1 0 55,58 A5,6 0 1 0 45,58 Z" />
-  </svg>
-`;
 
 const SHARK_STICKERS = {
   love: "icons/shark/love.png",
   yum: "icons/shark/yum.png",
   sad: "icons/shark/sad.png",
-  happyPool: Array.from({ length: 25 }, (_, i) => `icons/shark/happy-${i + 1}.png`)
+  happyPool: Array.from({ length: 25 }, (_, i) => `icons/shark/happy-${i + 1}.png`),
+  halloweenPool: [] // fylls i när riktiga illustrerade spökbilder laddats upp, t.ex. icons/shark/halloween-1.png
 };
 
 const ACCESSORY_EMOJI = {
@@ -811,9 +801,14 @@ const ACCESSORY_EMOJI = {
 let sealHappyPick = null;
 function sealHappyImage() {
   if (!sealHappyPick) {
-    const pool = isWinterMonth(new Date().getMonth() + 1)
-      ? SEAL_STICKERS.happyPool.concat(SEAL_STICKERS.winterPool)
-      : SEAL_STICKERS.happyPool;
+    let pool;
+    if (isHalloweenSeason() && SEAL_STICKERS.halloweenPool.length) {
+      pool = SEAL_STICKERS.halloweenPool;
+    } else if (isWinterMonth(new Date().getMonth() + 1)) {
+      pool = SEAL_STICKERS.happyPool.concat(SEAL_STICKERS.winterPool);
+    } else {
+      pool = SEAL_STICKERS.happyPool;
+    }
     sealHappyPick = pick(pool);
   }
   return sealHappyPick;
@@ -822,7 +817,11 @@ function sealHappyImage() {
 let sharkHappyPick = null;
 function sharkHappyImage() {
   if (!sharkHappyPick) {
-    sharkHappyPick = pick(SHARK_STICKERS.happyPool);
+    const pool =
+      isHalloweenSeason() && SHARK_STICKERS.halloweenPool.length
+        ? SHARK_STICKERS.halloweenPool
+        : SHARK_STICKERS.happyPool;
+    sharkHappyPick = pick(pool);
   }
   return sharkHappyPick;
 }
@@ -836,12 +835,10 @@ function renderAnimalSticker(stickers, happyImage, altText, prefix, mood, level)
 
   const earned = ACCESSORY_TIERS.filter((t) => level >= t.level);
   const badge = earned.length ? ACCESSORY_EMOJI[earned[earned.length - 1].label] || "" : "";
-  const ghostSheet = isHalloweenSeason() ? HALLOWEEN_SHEET_SVG : "";
 
   return `
     <div class="${prefix}-sticker-wrap">
       <img src="${src}" alt="${altText}" class="${prefix}-sticker-img" />
-      ${ghostSheet}
       ${badge ? `<span class="${prefix}-accessory-badge">${badge}</span>` : ""}
     </div>
   `;

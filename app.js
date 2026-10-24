@@ -826,6 +826,72 @@ function sharkHappyImage() {
   return sharkHappyPick;
 }
 
+/* ---------------------------------------------------------
+   Halloween: ett lakan över djuret, med urklippta ögon och
+   nosen eller näbben som sticker ut. Gäller 24 oktober till
+   1 november, och går att tvinga fram med ?halloween=1
+   eller stänga av med ?halloween=0.
+   --------------------------------------------------------- */
+const HALLOWEEN_PARAM = new URLSearchParams(location.search).get("halloween");
+
+function isHalloweenTime(date = new Date()) {
+  const m = date.getMonth() + 1;
+  const d = date.getDate();
+  return (m === 10 && d >= 24) || (m === 11 && d <= 1);
+}
+
+function halloweenOn() {
+  if (HALLOWEEN_PARAM === "1") return true;
+  if (HALLOWEEN_PARAM === "0") return false;
+  return isHalloweenTime();
+}
+
+// Nosen målas i djurets egen färg, så den läser som att den sticker ut
+// genom hålet och inte som en klump på lakanet.
+function ghostOverlay() {
+  // Hålen är riktiga hål: lakanet ritas med evenodd, så djuret under
+  // syns igenom. Nosen eller näbben tittar ut genom det nedre hålet.
+  return `
+    <svg class="ghost-sheet" viewBox="0 0 100 100" aria-hidden="true">
+      <defs>
+        <radialGradient id="ghost-veck" cx="38%" cy="26%" r="78%">
+          <stop offset="0%" stop-color="#ffffff" />
+          <stop offset="68%" stop-color="#f5f2ec" />
+          <stop offset="100%" stop-color="#ddd6ca" />
+        </radialGradient>
+      </defs>
+
+      <path
+        d="M50 9
+           C 28 9, 16 27, 16 48
+           L16 83
+           q5.5 7.5 11 0 q5.5 -7.5 11 0 q5.5 7.5 11 0 q5.5 -7.5 11 0 q5.5 7.5 11 0
+           L84 48
+           C 84 27, 72 9, 50 9 Z
+           M39 43 a5.5 6.8 0 1 0 0.01 0 Z
+           M61 43 a5.5 6.8 0 1 0 0.01 0 Z
+           M50 63 a7.5 6 0 1 0 0.01 0 Z"
+        fill="url(#ghost-veck)"
+        fill-rule="evenodd"
+        stroke="#2f3a7a"
+        stroke-width="2"
+        stroke-linejoin="round"
+      />
+
+      <!-- klippkanter, så hålen ser urklippta ut och inte påmålade -->
+      <g fill="none" stroke="#a89f90" stroke-width="0.9" opacity="0.55">
+        <ellipse cx="39" cy="43" rx="5.5" ry="6.8" />
+        <ellipse cx="61" cy="43" rx="5.5" ry="6.8" />
+        <ellipse cx="50" cy="63" rx="7.5" ry="6" />
+      </g>
+
+      <!-- mjuka veck längs kanterna, så tyget får fall utan att störa hålen -->
+      <path d="M23 52 q3 16 1 28" fill="none" stroke="#dfd8cc" stroke-width="2.4" stroke-linecap="round" opacity="0.75" />
+      <path d="M78 56 q-2 13 -1 24" fill="none" stroke="#dfd8cc" stroke-width="2.4" stroke-linecap="round" opacity="0.6" />
+    </svg>
+  `;
+}
+
 function renderAnimalSticker(stickers, happyImage, altText, prefix, mood, level) {
   let src;
   if (mood === "love") src = stickers.love;
@@ -833,12 +899,14 @@ function renderAnimalSticker(stickers, happyImage, altText, prefix, mood, level)
   else if (mood === "sad" || mood === "tired") src = stickers.sad;
   else src = happyImage();
 
+  const spoke = halloweenOn();
   const earned = ACCESSORY_TIERS.filter((t) => level >= t.level);
   const badge = earned.length ? ACCESSORY_EMOJI[earned[earned.length - 1].label] || "" : "";
 
   return `
-    <div class="${prefix}-sticker-wrap">
+    <div class="${prefix}-sticker-wrap${spoke ? " spokad" : ""}">
       <img src="${src}" alt="${altText}" class="${prefix}-sticker-img" />
+      ${spoke ? ghostOverlay() : ""}
       ${badge ? `<span class="${prefix}-accessory-badge">${badge}</span>` : ""}
     </div>
   `;

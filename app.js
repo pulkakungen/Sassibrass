@@ -173,8 +173,7 @@ const TASK_SECTIONS = [
       { id: "at-frukost", emoji: "🥣", text: "Ät frukost", reward: "food" },
       { id: "drick-vatten", emoji: "💧", text: "Drick vatten", reward: "food" },
       { id: "drick-kreatin", emoji: "🥤", text: "Drick kreatin", reward: "food" },
-      { id: "tander-morgon", emoji: "🪥", text: "Borsta tänderna", reward: "love" },
-      { id: "matsack", emoji: "🍱", text: "Packa snacks/bars/frukt", days: SKOLDAGAR, reward: "food" }
+      { id: "tander-morgon", emoji: "🪥", text: "Borsta tänderna", reward: "love" }
     ]
   },
   {
@@ -183,9 +182,7 @@ const TASK_SECTIONS = [
     title: "Till skolan",
     tasks: [
       { id: "padda-bocker", emoji: "💻", text: "Ta med padda och böcker", days: SKOLDAGAR, reward: "love" },
-      { id: "gympaklader", emoji: "👟", text: "Ta med gympakläder", days: [DAG_TIS, DAG_ONS, DAG_TORS], reward: "food" },
-      { id: "schema", emoji: "🗓️", text: "Kolla schemat", days: [DAG_SON, DAG_MAN, DAG_TIS, DAG_ONS, DAG_TORS, DAG_FRE], reward: "food" },
-      { id: "till-skolan", emoji: "🚌", text: "Ta dig till skolan i tid", days: SKOLDAGAR, reward: "love" }
+      { id: "schema", emoji: "🗓️", text: "Kolla schemat", days: [DAG_SON, DAG_MAN, DAG_TIS, DAG_ONS, DAG_TORS, DAG_FRE], reward: "food" }
     ]
   },
   {

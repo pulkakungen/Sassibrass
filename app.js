@@ -181,8 +181,8 @@ const TASK_SECTIONS = [
     emoji: "🎒",
     title: "Till skolan",
     tasks: [
-      { id: "padda-bocker", emoji: "💻", text: "Ta med padda och böcker", days: SKOLDAGAR, reward: "love" },
-      { id: "schema", emoji: "🗓️", text: "Kolla schemat", days: [DAG_SON, DAG_MAN, DAG_TIS, DAG_ONS, DAG_TORS, DAG_FRE], reward: "food" }
+      { id: "padda-bocker", emoji: "💻", text: "Ta med padda och böcker", days: SKOLDAGAR, schoolOnly: true, reward: "love" },
+      { id: "schema", emoji: "🗓️", text: "Kolla schemat", days: [DAG_SON, DAG_MAN, DAG_TIS, DAG_ONS, DAG_TORS, DAG_FRE], schoolOnly: true, reward: "food" }
     ]
   },
   {
@@ -249,7 +249,7 @@ const TASK_SECTIONS = [
     emoji: "👭",
     title: "Socialt & läxor",
     tasks: [
-      { id: "laxa", emoji: "📖", text: "Gör läxan", days: [DAG_MAN, DAG_TIS, DAG_ONS, DAG_TORS, DAG_SON], reward: "food" },
+      { id: "laxa", emoji: "📖", text: "Gör läxan", days: [DAG_MAN, DAG_TIS, DAG_ONS, DAG_TORS, DAG_SON], schoolOnly: true, reward: "food" },
       { id: "kompis", emoji: "💬", text: "Träffa eller prata med en kompis", reward: "love" },
       { id: "piano", emoji: "🎹", text: "Träna piano 10 minuter", days: [DAG_MAN, DAG_ONS], reward: "food" }
     ]
@@ -302,6 +302,17 @@ function weekParityMatches(weekParity, date) {
   return weekParity === "even" ? isEvenWeek : !isEvenWeek;
 }
 
+// Skollov: skolrelaterade uppgifter (task.schoolOnly) pausas under dessa
+// datumintervall. Fylls på manuellt när hon har lov.
+const SCHOOL_BREAKS = [
+  { start: "2026-10-26", end: "2026-11-01" } // höstlov
+];
+function isSchoolBreak(date) {
+  const y = date.getFullYear(), m = String(date.getMonth() + 1).padStart(2, "0"), d = String(date.getDate()).padStart(2, "0");
+  const iso = `${y}-${m}-${d}`;
+  return SCHOOL_BREAKS.some((b) => iso >= b.start && iso <= b.end);
+}
+
 // task.days: begränsar till vissa veckodagar. task.parity: "even"/"odd" ger "varannan dag"-uppgifter.
 // task.schedule: lista med {day, weekParity} för uppgifter som varierar per dag OCH jämn/udda vecka
 // (t.ex. sopsortering), används istället för days/parity när den finns.
@@ -310,6 +321,7 @@ function isTaskActiveOnDate(task, date) {
     const y = date.getFullYear(), m = String(date.getMonth() + 1).padStart(2, "0"), d = String(date.getDate()).padStart(2, "0");
     return task.date === `${y}-${m}-${d}`;
   }
+  if (task.schoolOnly && isSchoolBreak(date)) return false;
   if (task.schedule) {
     const today = date.getDay();
     return task.schedule.some((rule) => rule.day === today && weekParityMatches(rule.weekParity, date));

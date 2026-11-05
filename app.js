@@ -771,7 +771,7 @@ const SEAL_STICKERS = {
     "icons/seal/happy-14.png"
   ],
   // Snöbilden sparas till vintern (okt-feb) istället för att synas året runt.
-  winterPool: ["icons/seal/happy-13.png"],
+  winterPool: ["icons/seal/happy-13.png", "icons/seal/hat-1.png"],
   halloweenPool: ["icons/seal/halloween-1.png"]
 };
 
@@ -785,6 +785,83 @@ function isHalloweenSeason() {
   const d = new Date();
   const month = d.getMonth() + 1;
   return month === 10 || (month === 11 && d.getDate() === 1);
+}
+
+/* ---------------------------------------------------------
+   Advent & jul: ljusblå bakgrund från fredagen innan första
+   advent, adventsljus som tänds ett i taget varje adventssöndag,
+   och snöflingor som dalar från 5 december. Allt stänger av sig
+   själv den 31 december.
+   --------------------------------------------------------- */
+function dateOnly(d) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+// Fjärde advent = söndagen på eller närmast före jul. De andra räknas bakåt
+// därifrån, en vecka i taget.
+function adventSundays(year) {
+  const fourth = new Date(year, 11, 25);
+  while (fourth.getDay() !== 0) fourth.setDate(fourth.getDate() - 1);
+  return [21, 14, 7, 0].map((offset) => {
+    const d = new Date(fourth);
+    d.setDate(d.getDate() - offset);
+    return d;
+  });
+}
+
+function fridayBeforeFirstAdvent(year) {
+  const [first] = adventSundays(year);
+  const fri = new Date(first);
+  while (fri.getDay() !== 5) fri.setDate(fri.getDate() - 1);
+  return fri;
+}
+
+function isAdventSeason(date = new Date()) {
+  const today = dateOnly(date);
+  const start = dateOnly(fridayBeforeFirstAdvent(today.getFullYear()));
+  const end = new Date(today.getFullYear(), 11, 31);
+  return today >= start && today <= end;
+}
+
+function adventCandlesLit(date = new Date()) {
+  const today = dateOnly(date);
+  return adventSundays(today.getFullYear()).filter((s) => today >= dateOnly(s)).length;
+}
+
+function isSnowSeason(date = new Date()) {
+  const today = dateOnly(date);
+  return today.getMonth() === 11 && today.getDate() >= 5;
+}
+
+let snowLayerBuilt = false;
+function renderSeasonalTheme() {
+  const stage = document.querySelector(".pet-stage");
+  if (!stage) return;
+
+  stage.classList.toggle("winter-theme", isAdventSeason());
+
+  const candleWrap = document.getElementById("advent-candles");
+  if (candleWrap) {
+    const lit = isAdventSeason() ? adventCandlesLit() : 0;
+    candleWrap.hidden = !isAdventSeason();
+    [...candleWrap.children].forEach((el, i) => el.classList.toggle("lit", i < lit));
+  }
+
+  const snowLayer = document.getElementById("snow-layer");
+  if (snowLayer) {
+    const shouldSnow = isSnowSeason();
+    snowLayer.hidden = !shouldSnow;
+    if (shouldSnow && !snowLayerBuilt) {
+      snowLayer.innerHTML = Array.from({ length: 7 }, (_, i) => {
+        const left = Math.round(Math.random() * 90) + 2;
+        const delay = (Math.random() * 6).toFixed(1);
+        const duration = (7 + Math.random() * 5).toFixed(1);
+        const size = (0.8 + Math.random() * 0.7).toFixed(2);
+        return `<span class="snowflake" style="left:${left}%; animation-delay:${delay}s; animation-duration:${duration}s; font-size:${size}rem;">❄️</span>`;
+      }).join("");
+      snowLayerBuilt = true;
+    }
+  }
 }
 
 const SHARK_STICKERS = {
@@ -1023,6 +1100,7 @@ function renderAll() {
   updateStatsUI();
   renderTaskSections();
   renderBabyAvatar();
+  renderSeasonalTheme();
   setBubble(greetingForNow().replace("!", `, ${state.petName || "vän"}!`));
   document.getElementById("demo-badge").hidden = !DEMO_MODE;
 }

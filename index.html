@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=6" />
+<link rel="stylesheet" href="style.css?v=7" />
 </head>
 <body>
 
@@ -96,6 +96,7 @@
   </header>
 
   <div class="pet-stage">
+    <div id="snow-layer" class="snow-layer" hidden></div>
     <div id="bath-overlay" class="bath-overlay"></div>
     <div class="pet-avatar-row">
       <div id="pet-size-wrap" class="pet-size-wrap">
@@ -107,6 +108,12 @@
       </div>
     </div>
     <div id="pet-bubble" class="pet-speech-bubble">Hej! Redo för en pepp-dag? 💫</div>
+    <div id="advent-candles" class="advent-candles" hidden>
+      <span class="advent-candle">🕯️</span>
+      <span class="advent-candle">🕯️</span>
+      <span class="advent-candle">🕯️</span>
+      <span class="advent-candle">🕯️</span>
+    </div>
     <div class="feed-buttons">
       <button id="feed-btn" class="feed-btn">
         🍤 Ge mat <span id="food-count" class="count-badge">0</span>
@@ -200,6 +207,6 @@
   </div>
 </div>
 
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>

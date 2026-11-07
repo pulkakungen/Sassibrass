@@ -626,7 +626,7 @@ function handleDailyReset() {
   saveState();
 }
 
-const HUNGER_DECAY_PER_HOUR = 6;
+const HUNGER_DECAY_PER_HOUR = 3;
 const HAPPINESS_DECAY_PER_HOUR = 3;
 
 // Sänker hunger/humör i takt med hur länge sen hon senast hade appen öppen,
@@ -1255,7 +1255,7 @@ function completeTask(taskId, sectionId) {
 function feedPet() {
   if (state.food <= 0) return;
   state.food -= 1;
-  state.hunger = clamp(state.hunger + 12, 0, 100);
+  state.hunger = clamp(state.hunger + 20, 0, 100);
   saveState();
   updateStatsUI();
   floatEmojiFromPet("🍤");

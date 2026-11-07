@@ -772,6 +772,8 @@ const SEAL_STICKERS = {
   ],
   // Snöbilden sparas till vintern (okt-feb) istället för att synas året runt.
   winterPool: ["icons/seal/happy-13.png", "icons/seal/hat-1.png"],
+  // Mössa + halsduk, tar över från mössan ensam när snön kommer (5 dec - 31 dec).
+  snowPool: ["icons/seal/scarf-1.png"],
   halloweenPool: ["icons/seal/halloween-1.png"]
 };
 
@@ -892,6 +894,8 @@ function sealHappyImage() {
     let pool;
     if (isHalloweenSeason() && SEAL_STICKERS.halloweenPool.length) {
       pool = SEAL_STICKERS.halloweenPool;
+    } else if (isSnowSeason() && SEAL_STICKERS.snowPool.length) {
+      pool = SEAL_STICKERS.snowPool;
     } else if (isWinterMonth(new Date().getMonth() + 1)) {
       pool = SEAL_STICKERS.happyPool.concat(SEAL_STICKERS.winterPool);
     } else {

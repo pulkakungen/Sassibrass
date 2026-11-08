@@ -502,6 +502,22 @@ button {
 .pet-stage.winter-theme {
   background: linear-gradient(180deg, #eaf6ff 0%, #d2ecff 55%, #bfe3ff 100%);
 }
+.pet-stage.autumn-theme {
+  background: linear-gradient(180deg, #ffe0b0 0%, #ffcf8a 55%, #ffb86b 100%);
+}
+
+/* ---------- höst: löv som ligger stilla i hörnen ---------- */
+.leaf-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+.leaf-layer .leaf {
+  position: absolute;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
+}
 
 /* ---------- advent: ljus som tänds ett i taget ---------- */
 .advent-candles {

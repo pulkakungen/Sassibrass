@@ -774,7 +774,10 @@ const SEAL_STICKERS = {
   winterPool: ["icons/seal/happy-13.png", "icons/seal/hat-1.png"],
   // Mössa + halsduk, tar över från mössan ensam när snön kommer (5 dec - 31 dec).
   snowPool: ["icons/seal/scarf-1.png"],
-  halloweenPool: ["icons/seal/halloween-1.png"]
+  halloweenPool: ["icons/seal/halloween-1.png"],
+  luciaPool: ["icons/seal/lucia-1.png"],
+  tomtePool: ["icons/seal/tomte-1.png"],
+  varPool: ["icons/seal/var-1.png"]
 };
 
 function isWinterMonth(month) {
@@ -835,12 +838,66 @@ function isSnowSeason(date = new Date()) {
   return today.getMonth() === 11 && today.getDate() >= 5;
 }
 
+// Ett fönster som {manad, dag} i båda ändar, båda dagarna inräknade. Fönstret
+// får gå över ett årsskifte (t.ex. tomteluvan), därför jämförelsen i två delar.
+// Samma mönster och samma datum som i Olles app, så familjen hänger ihop.
+function inomSasong(fran, till, date = new Date()) {
+  const nu = (date.getMonth() + 1) * 100 + date.getDate();
+  const a = fran.manad * 100 + fran.dag;
+  const b = till.manad * 100 + till.dag;
+  return a <= b ? nu >= a && nu <= b : nu >= a || nu <= b;
+}
+
+const LUCIA_FRAN = { manad: 12, dag: 10 };
+const LUCIA_TILL = { manad: 12, dag: 14 };
+function isLuciaSeason(date = new Date()) {
+  return inomSasong(LUCIA_FRAN, LUCIA_TILL, date);
+}
+
+const TOMTE_FRAN = { manad: 12, dag: 16 };
+const TOMTE_TILL = { manad: 1, dag: 6 };
+function isTomteSeason(date = new Date()) {
+  return inomSasong(TOMTE_FRAN, TOMTE_TILL, date);
+}
+
+const VAR_FRAN = { manad: 3, dag: 1 };
+const VAR_TILL = { manad: 4, dag: 14 };
+function isSpringSeason(date = new Date()) {
+  return inomSasong(VAR_FRAN, VAR_TILL, date);
+}
+
+// Höst: orange bakgrund och löv, 24 oktober till och med 30 november. Slutar
+// där adventets ljusblå tar vid (adventet kan börja innan 30:e, då vinner det).
+const HOST_FRAN = { manad: 10, dag: 24 };
+const HOST_TILL = { manad: 11, dag: 30 };
+function isAutumnSeason(date = new Date()) {
+  return inomSasong(HOST_FRAN, HOST_TILL, date) && !isAdventSeason(date);
+}
+
 let snowLayerBuilt = false;
+let leafLayerBuilt = false;
 function renderSeasonalTheme() {
   const stage = document.querySelector(".pet-stage");
   if (!stage) return;
 
   stage.classList.toggle("winter-theme", isAdventSeason());
+  stage.classList.toggle("autumn-theme", isAutumnSeason());
+
+  const leafLayer = document.getElementById("leaf-layer");
+  if (leafLayer) {
+    const shouldShowLeaves = isAutumnSeason();
+    leafLayer.hidden = !shouldShowLeaves;
+    if (shouldShowLeaves && !leafLayerBuilt) {
+      const leaves = ["🍁", "🍂", "🍃"];
+      leafLayer.innerHTML = Array.from({ length: 5 }, (_, i) => {
+        const left = Math.round(Math.random() * 85) + 2;
+        const top = Math.round(Math.random() * 80) + 4;
+        const size = (0.9 + Math.random() * 0.6).toFixed(2);
+        return `<span class="leaf" style="left:${left}%; top:${top}%; font-size:${size}rem;">${pick(leaves)}</span>`;
+      }).join("");
+      leafLayerBuilt = true;
+    }
+  }
 
   const candleWrap = document.getElementById("advent-candles");
   if (candleWrap) {
@@ -871,7 +928,12 @@ const SHARK_STICKERS = {
   yum: "icons/shark/yum.png",
   sad: "icons/shark/sad.png",
   happyPool: Array.from({ length: 25 }, (_, i) => `icons/shark/happy-${i + 1}.png`),
-  halloweenPool: ["icons/shark/halloween-1.png"]
+  winterPool: [],
+  snowPool: [],
+  halloweenPool: ["icons/shark/halloween-1.png"],
+  luciaPool: ["icons/shark/lucia-1.png"],
+  tomtePool: ["icons/shark/tomte-1.png"],
+  varPool: ["icons/shark/var-1.png"]
 };
 
 const ACCESSORY_EMOJI = {
@@ -889,19 +951,22 @@ const ACCESSORY_EMOJI = {
 // Slumpas en gång per app-session, inte varje render, så bilden inte hoppar
 // runt varje gång hon bockar av en uppgift.
 let sealHappyPick = null;
+// Prioritetsordning när flera säsonger krockar: halloween vinner alltid,
+// sen lucia och tomteluva (bara ett fåtal dagar var), sen halsduken,
+// sen mössan för resten av vintern, sen våren.
+function seasonalPool(stickers) {
+  if (isHalloweenSeason() && stickers.halloweenPool.length) return stickers.halloweenPool;
+  if (isLuciaSeason() && stickers.luciaPool.length) return stickers.luciaPool;
+  if (isTomteSeason() && stickers.tomtePool.length) return stickers.tomtePool;
+  if (isSnowSeason() && stickers.snowPool.length) return stickers.snowPool;
+  if (isWinterMonth(new Date().getMonth() + 1)) return stickers.happyPool.concat(stickers.winterPool);
+  if (isSpringSeason() && stickers.varPool.length) return stickers.varPool;
+  return stickers.happyPool;
+}
+
 function sealHappyImage() {
   if (!sealHappyPick) {
-    let pool;
-    if (isHalloweenSeason() && SEAL_STICKERS.halloweenPool.length) {
-      pool = SEAL_STICKERS.halloweenPool;
-    } else if (isSnowSeason() && SEAL_STICKERS.snowPool.length) {
-      pool = SEAL_STICKERS.snowPool;
-    } else if (isWinterMonth(new Date().getMonth() + 1)) {
-      pool = SEAL_STICKERS.happyPool.concat(SEAL_STICKERS.winterPool);
-    } else {
-      pool = SEAL_STICKERS.happyPool;
-    }
-    sealHappyPick = pick(pool);
+    sealHappyPick = pick(seasonalPool(SEAL_STICKERS));
   }
   return sealHappyPick;
 }
@@ -909,11 +974,7 @@ function sealHappyImage() {
 let sharkHappyPick = null;
 function sharkHappyImage() {
   if (!sharkHappyPick) {
-    const pool =
-      isHalloweenSeason() && SHARK_STICKERS.halloweenPool.length
-        ? SHARK_STICKERS.halloweenPool
-        : SHARK_STICKERS.happyPool;
-    sharkHappyPick = pick(pool);
+    sharkHappyPick = pick(seasonalPool(SHARK_STICKERS));
   }
   return sharkHappyPick;
 }

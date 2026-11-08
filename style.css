@@ -528,6 +528,9 @@ button {
   position: relative;
   z-index: 2;
 }
+.advent-candles[hidden] {
+  display: none;
+}
 .advent-candle {
   font-size: 1.6rem;
   filter: grayscale(1) opacity(0.4);

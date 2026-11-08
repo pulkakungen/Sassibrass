@@ -833,9 +833,15 @@ function adventCandlesLit(date = new Date()) {
   return adventSundays(today.getFullYear()).filter((s) => today >= dateOnly(s)).length;
 }
 
+// Halsduken gäller från 5 december, genom hela januari, och februari
+// till och med vecka 8 (ungefär när det börjar kännas som vårvinter).
 function isSnowSeason(date = new Date()) {
   const today = dateOnly(date);
-  return today.getMonth() === 11 && today.getDate() >= 5;
+  const month = today.getMonth(); // 0-indexerat: 11 = dec, 0 = jan, 1 = feb
+  if (month === 11) return today.getDate() >= 5;
+  if (month === 0) return true;
+  if (month === 1) return isoWeekNumber(today) <= 8;
+  return false;
 }
 
 // Ett fönster som {manad, dag} i båda ändar, båda dagarna inräknade. Fönstret

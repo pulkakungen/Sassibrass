@@ -191,7 +191,7 @@ const TASK_SECTIONS = [
     title: "Hemma efter skolan",
     tasks: [
       {
-        id: "matsopor",
+        id: "matsopor", kvar: true,
         emoji: "🍂",
         text: "Gå ut med matsopor",
         reward: "love",
@@ -204,7 +204,7 @@ const TASK_SECTIONS = [
         ]
       },
       {
-        id: "plastsopor",
+        id: "plastsopor", kvar: true,
         emoji: "♻️",
         text: "Gå ut med plastsopor",
         reward: "food",
@@ -215,30 +215,30 @@ const TASK_SECTIONS = [
         ]
       },
       {
-        id: "metallglas",
+        id: "metallglas", kvar: true,
         emoji: "🍾",
         text: "Gå ut med metall- och glassopor",
         reward: "love",
         schedule: [{ day: DAG_SON, weekParity: "odd" }]
       },
       {
-        id: "papperkartong",
+        id: "papperkartong", kvar: true,
         emoji: "📦",
         text: "Gå ut med papper och kartong",
         reward: "food",
         schedule: [{ day: DAG_SON, weekParity: "odd" }]
       },
       {
-        id: "restavfall",
+        id: "restavfall", kvar: true,
         emoji: "🗑️",
         text: "Gå ut med restavfall",
         reward: "love",
         schedule: [{ day: DAG_SON, weekParity: "odd" }]
       },
-      { id: "tvatten", emoji: "🧺", text: "Gå ner med tvätten", days: [DAG_TIS, DAG_LOR], reward: "love" },
+      { id: "tvatten", kvar: true, emoji: "🧺", text: "Gå ner med tvätten", days: [DAG_TIS, DAG_LOR], reward: "love" },
       { id: "snygga-rum", emoji: "🧹", text: "Snygga upp rummet", reward: "food" },
-      { id: "dammsuga", emoji: "🧺", text: "Dammsuga", days: [DAG_LOR], reward: "love" },
-      { id: "stada-badrum", emoji: "🚽", text: "Städa badrummet", days: [DAG_LOR], reward: "food" },
+      { id: "dammsuga", kvar: true, emoji: "🧺", text: "Dammsuga", days: [DAG_LOR], reward: "love" },
+      { id: "stada-badrum", kvar: true, emoji: "🚽", text: "Städa badrummet", days: [DAG_LOR], reward: "food" },
       { id: "nedanvaning", emoji: "📥", text: "Plocka undan grejer från nedanvåningen", reward: "love" },
       { id: "stada-rosa-rummet-2026-09-18", emoji: "🧽", text: "Städa rosa rummet", date: "2026-09-18", reward: "both" },
       { id: "klader-vardagsrum-2026-09-18", emoji: "👚", text: "Ta upp alla kläder från vardagsrummet", date: "2026-09-18", reward: "food" }
@@ -337,9 +337,52 @@ function isTaskActiveOnDate(task, date) {
 function isTaskActiveToday(task) {
   return isTaskActiveOnDate(task, new Date());
 }
+/* Sysslor som ligger kvar (kvar: true), till exempel soporna, följer med
+   till nästa dag tills de blir gjorda. Allt annat, som att gå upp eller
+   ta sig till skolan, försvinner vid midnatt som vanligt.
+   state.carried håller id och dagen sysslan först skulle ha gjorts. */
+function carriedOn(task, d) {
+  if (!task.kvar || !state.carried || !state.carried[task.id]) return false;
+  if (extraDateKey(d) !== state.lastActiveDate) return false;
+  return true;
+}
+
+function carriedSince(task) {
+  if (!state.carried || !state.carried[task.id]) return "";
+  if (isTaskActiveOnDate(task, new Date())) return "";
+  const dag = new Date(state.carried[task.id] + "T12:00:00");
+  return WEEKDAY_NAMES[dag.getDay()];
+}
+
+// Körs vid dagsbytet, innan dagens bockar nollas.
+function carryOverChores(today) {
+  const last = state.lastActiveDate;
+  const carried = { ...(state.carried || {}) };
+  const scheduled = (t, d) => isTaskActiveOnDate(t, d);
+  const kvar = [];
+  TASK_SECTIONS.forEach((sec) => sec.tasks.forEach((t) => t.kvar && kvar.push(t)));
+
+  if (last) {
+    const lastDate = new Date(last + "T12:00:00");
+    kvar.forEach((t) => {
+      if (state.completedToday[t.id]) delete carried[t.id];
+      else if (!carried[t.id] && scheduled(t, lastDate)) carried[t.id] = last;
+    });
+    // dagar då appen inte öppnades alls
+    const d = new Date(lastDate);
+    d.setDate(d.getDate() + 1);
+    for (let i = 0; i < 31 && extraDateKey(d) < today; i++, d.setDate(d.getDate() + 1)) {
+      kvar.forEach((t) => {
+        if (!carried[t.id] && scheduled(t, d)) carried[t.id] = extraDateKey(d);
+      });
+    }
+  }
+  state.carried = carried;
+}
+
 function activeTasksForSection(section, date) {
   const d = date === undefined ? new Date() : date;
-  return section.tasks.filter((t) => isTaskActiveOnDate(t, d)).concat(extrasForSection(section.id, d));
+  return section.tasks.filter((t) => isTaskActiveOnDate(t, d) || carriedOn(t, d)).concat(extrasForSection(section.id, d));
 }
 /* Extrauppgifter som läggs till från föräldrapanelen. Hämtas från workern och
    sparas lokalt, så de finns kvar även utan uppkoppling. */
@@ -620,6 +663,7 @@ function handleDailyReset() {
 
   }
 
+  carryOverChores(today);
   state.completedToday = {};
   state.rewardedToday = {};
   state.lastActiveDate = today;
@@ -1146,7 +1190,7 @@ function renderTaskSections() {
             <li class="task-item${done ? " done" : ""}" data-task="${t.id}" data-section="${section.id}">
               <span class="task-checkbox">${done ? "✓" : ""}</span>
               <span class="task-emoji">${t.emoji}</span>
-              <span class="task-label">${t.text}</span>
+              <span class="task-label">${t.text}${carriedSince(t) ? ` <small class="task-carried">sedan ${carriedSince(t)}</small>` : ""}</span>
             </li>`;
           })
           .join("")}
